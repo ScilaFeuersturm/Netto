@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">Netto</string>
-    <string name="channel_reminders_name">Recordatorios de vencimientos</string>
-    <string name="channel_reminders_description">Avisos de pagos próximos a vencer o vencidos</string>
-</resources>

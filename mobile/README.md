@@ -6,7 +6,7 @@ modelos de ahorro (50/30/20, etc.), reportes y escaneo de facturas con OCR.
 Funciona sin conexión (local-first): los datos se guardan en una base SQLite cifrada en el teléfono y
 se sincronizan con Supabase (`../supabase`), donde viven las cuentas.
 
-Es la migración a Expo de la app Android nativa (Kotlin + Compose) que está en `../app`.
+Es la migración a Expo de la app Android nativa (Kotlin + Compose), que quedó en el historial de git.
 
 ## Cómo correrla
 

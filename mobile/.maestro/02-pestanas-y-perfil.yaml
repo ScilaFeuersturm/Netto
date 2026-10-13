@@ -1,0 +1,70 @@
+# 2/3: pestañas, escáner, perfil y cierre de sesión (usa los datos que deja la parte 1).
+# Requiere el email de la cuenta de prueba (uno nuevo por corrida):
+#   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
+appId: com.example.netto
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Netto está bloqueado|Mi balance general"
+    timeout: 60000
+# Si pasaron más de 5 minutos desde el último uso, la app pide desbloquear.
+- runFlow:
+    when:
+      visible: "Netto está bloqueado"
+    commands:
+      - tapOn:
+          id: "unlock-password"
+      - inputText: "secreto123"
+      - pressKey: Enter
+- extendedWaitUntil:
+    visible: "Mi balance general"
+    timeout: 60000
+
+# ---- Facturas ----
+- tapOn: "Facturas"
+- assertVisible: "Escanear Factura"
+# Los filtros están en una fila que se desplaza horizontalmente.
+- swipe:
+    from: "Vencidas \\(0\\)"
+    direction: LEFT
+- tapOn: "Pagadas \\(1\\)"
+- assertVisible: "Luz ANDE.*"
+- assertVisible: ".*Pagada.*"
+
+# ---- Ahorro ----
+- tapOn: "Ahorro"
+- assertVisible: "Estrategia de Ahorro"
+- assertVisible: "Distribución de Ingresos"
+- scrollUntilVisible:
+    element: "Regla 70/20/10"
+- scrollUntilVisible:
+    element: "Activar"
+- tapOn: "Activar"
+- scrollUntilVisible:
+    element: "Activo"
+
+# ---- Reportes ----
+- tapOn: "Reportes"
+- assertVisible: "FLUJO NETO DISPONIBLE"
+- assertVisible: "Distribución de Gastos"
+- scrollUntilVisible:
+    element: "Historial de Pagos"
+- assertVisible: "Luz ANDE.*"
+
+# ---- Escáner (solo abrir y volver a carga manual) ----
+- tapOn: "Inicio"
+- tapOn: "Escanear"
+- assertVisible: "Escanear factura"
+- tapOn: "Cargar los datos manualmente"
+- assertVisible: "Nuevo pago"
+- tapOn: "Volver"
+
+# ---- Perfil y cambio de moneda ----
+- tapOn: "Perfil"
+- assertVisible: "Tu perfil"
+- assertVisible: ${EMAIL}
+- assertVisible: "Moneda de visualización"
+- scrollUntilVisible:
+    element: "Cerrar sesión"
+- tapOn: "Cerrar sesión"

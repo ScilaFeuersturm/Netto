@@ -1,0 +1,37 @@
+# 3/3: login con contraseña incorrecta y luego correcta; los datos vuelven desde la nube.
+# Requiere el email de la cuenta de prueba (uno nuevo por corrida):
+#   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
+appId: com.example.netto
+---
+# ---- Volver a entrar ----
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Iniciá sesión"
+    timeout: 60000
+- tapOn:
+    id: "login-email"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password"
+- inputText: "clave-incorrecta"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Email o contraseña incorrectos."
+    timeout: 60000
+- tapOn:
+    id: "login-password"
+- eraseText: 30
+- inputText: "secreto123"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "SALDO DISPONIBLE DEL MES"
+    timeout: 60000
+- assertVisible: "¡Hola, Ana!"
+# Al cerrar sesión se borraron los datos del teléfono: tienen que volver desde la nube.
+- extendedWaitUntil:
+    visible: "Luz ANDE.*"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "-Gs. 350.000"
+    centerElement: true

@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["NettoCryptoModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.nettocrypto.NettoCryptoModule"]
+  }
+}

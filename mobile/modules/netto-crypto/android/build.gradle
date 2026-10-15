@@ -1,0 +1,15 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.example.netto'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.nettocrypto"
+  defaultConfig {
+    versionCode 1
+    versionName "1.0.0"
+  }
+}

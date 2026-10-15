@@ -1,0 +1,8 @@
+{
+  "name": "netto-crypto",
+  "version": "1.0.0",
+  "description": "PBKDF2 nativo para el hash de contraseñas de Netto",
+  "main": "src/index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

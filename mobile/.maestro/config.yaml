@@ -1,0 +1,7 @@
+# Las partes dependen de los datos que deja la anterior: se corren en este orden.
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - 01-registro-y-pago
+    - 02-pestanas-y-perfil
+    - 03-volver-a-entrar

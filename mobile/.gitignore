@@ -43,3 +43,4 @@ yarn-error.*
 # Artefactos de compilación de los módulos nativos locales
 modules/*/android/build/
 modules/*/android/.cxx/
+modules/*/android/.gradle/

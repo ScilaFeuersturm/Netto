@@ -9,7 +9,7 @@ import { CATEGORIES } from '@/domain/models';
 import { reportsState, type ReportsState } from '@/features/selectors';
 import { useAppData } from '@/state/AppDataProvider';
 import { Card, Dot, HeroAmount, HeroCard, HeroTile, Icon, IconBox, ProgressBar, ScreenPadding, Tag, Text, TonalButton } from '@/ui/primitives';
-import { Hero, Palette, useTheme } from '@/ui/theme';
+import { Hero, useTheme } from '@/ui/theme';
 
 /** Pantalla "Reportes": flujo neto del mes, distribución de gastos por categoría e historial de pagos. */
 export default function HistoryScreen() {
@@ -90,13 +90,12 @@ function MonthPill({ month, selected, onPress }: { month: YearMonth; selected: b
 }
 
 function NetFlowHero({ state, currency }: { state: ReportsState; currency: CurrencyCode }) {
-  const { colors } = useTheme();
   const positive = state.netFlow >= 0;
   return (
     <HeroCard>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1 }}>
-          FLUJO NETO DISPONIBLE
+          Ingresos menos pagos del mes
         </Text>
         <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: Hero.tile, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name={positive ? 'trending-up' : 'trending-down'} color={Hero.onColor} />
@@ -109,14 +108,14 @@ function NetFlowHero({ state, currency }: { state: ReportsState; currency: Curre
           label="Total ingresos"
           value={formatMoney(state.totalIncome, currency)}
           caption="Ingreso mensual"
-          captionColor={Palette.Mint}
+          captionColor={Hero.positive}
         />
         <FlowTile
           icon="arrow-upward"
           label="Total egresos"
           value={formatMoney(state.totalExpenses, currency)}
           caption={`${state.expensesPercentOfIncome}% del ingreso`}
-          captionColor={colors.tertiary}
+          captionColor={Hero.highlight}
         />
       </View>
     </HeroCard>
@@ -156,13 +155,13 @@ function FlowTile({
 
 function ExpenseDistributionCard({ state, currency }: { state: ReportsState; currency: CurrencyCode }) {
   const { colors } = useTheme();
-  const palette = [colors.primary, colors.secondary, Palette.Slate, colors.tertiary, colors.outline];
+  const palette = [colors.primary, colors.secondary, colors.onSurfaceVariant, colors.tertiary, colors.outline];
   const n = state.categories.length;
   return (
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View style={{ flex: 1 }}>
-          <Text variant="titleLarge">Distribución de Gastos</Text>
+          <Text variant="titleLarge">Distribución de gastos</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
             Desglose de {formatMoney(state.totalExpenses, currency)} del mes
           </Text>
@@ -214,7 +213,7 @@ function PaymentHistoryCard({ state, month }: { state: ReportsState; month: Year
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Icon name="history" color={colors.onSurfaceVariant} />
         <Text variant="titleLarge" style={{ flex: 1, marginLeft: 8 }}>
-          Historial de Pagos
+          Historial de pagos
         </Text>
         <Text variant="labelMedium" color={colors.onSurfaceVariant}>
           {longEs(month)}

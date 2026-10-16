@@ -1,6 +1,7 @@
 import type { AuthError, User as SupabaseUser } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 
+import { LEGAL_VERSION } from '@/domain/legal';
 import { syncNow } from '@/sync/scheduler';
 import { pendingChanges } from '@/sync/engine';
 
@@ -61,7 +62,11 @@ export async function register(name: string, email: string, password: string): P
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
-      options: { data: { name: name.trim() }, emailRedirectTo: authRedirectUrl() },
+      options: {
+        // Queda registrado qué versión de los términos y la política aceptó y cuándo.
+        data: { name: name.trim(), legal_version: LEGAL_VERSION, legal_accepted_at: new Date().toISOString() },
+        emailRedirectTo: authRedirectUrl(),
+      },
     });
     if (error) return { ok: false, message: messageFor(error) };
     // Supabase no avisa si el email ya existe (para no revelar cuentas): devuelve un usuario sin identidades.

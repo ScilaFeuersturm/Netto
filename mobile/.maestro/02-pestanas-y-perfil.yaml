@@ -6,7 +6,7 @@ appId: com.example.netto
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Netto está bloqueado|Mi balance general"
+    visible: "Netto está bloqueado|Te queda este mes"
     timeout: 60000
 # Si pasaron más de 5 minutos desde el último uso, la app pide desbloquear.
 - runFlow:
@@ -18,17 +18,25 @@ appId: com.example.netto
       - inputText: "secreto123"
       - pressKey: Enter
 - extendedWaitUntil:
-    visible: "Mi balance general"
+    visible: "Te queda este mes"
     timeout: 60000
 
 # ---- Facturas ----
 - tapOn:
     id: "tab-obligations"
-- assertVisible: "Escanear Factura"
+- assertVisible: "Escanear factura"
 # Los filtros están en una fila que se desplaza horizontalmente.
-- swipe:
-    from: "Vencidas \\(0\\)"
-    direction: LEFT
+# Se desliza hasta ver "Pagadas" entero: tocarlo cortado en el borde no lo selecciona.
+- repeat:
+    while:
+      notVisible:
+        text: "Pagadas \\(1\\)"
+    times: 3
+    commands:
+      - swipe:
+          from: "Por vencer.*"
+          direction: LEFT
+      - waitForAnimationToEnd
 - tapOn: "Pagadas \\(1\\)"
 - assertVisible: "Luz ANDE.*"
 - assertVisible: ".*Pagada.*"
@@ -36,7 +44,7 @@ appId: com.example.netto
 # ---- Ahorro ----
 - tapOn:
     id: "tab-budget"
-- assertVisible: "Estrategia de Ahorro"
+- assertVisible: "Estrategia de ahorro"
 - assertVisible: "Distribución de Ingresos"
 - scrollUntilVisible:
     element: "Regla 70/20/10"
@@ -49,10 +57,10 @@ appId: com.example.netto
 # ---- Reportes ----
 - tapOn:
     id: "tab-history"
-- assertVisible: "FLUJO NETO DISPONIBLE"
+- assertVisible: "Ingresos menos pagos del mes"
 - assertVisible: "Distribución de Gastos"
 - scrollUntilVisible:
-    element: "Historial de Pagos"
+    element: "Historial de pagos"
 - assertVisible: "Luz ANDE.*"
 
 # ---- Escáner (solo abrir y volver a carga manual) ----

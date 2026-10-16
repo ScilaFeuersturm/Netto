@@ -35,8 +35,13 @@ appId: com.example.netto
 - tapOn:
     id: "register-confirm"
 - inputText: "secreto123"
-# Se envía con la tecla "listo" del teclado (en iPad el teclado tapa el botón).
-- pressKey: Enter
+# Deslizar cierra el teclado, que si no tapa la casilla y el botón.
+- scroll
+- waitForAnimationToEnd
+# Aceptar términos y privacidad (sin esto no se puede crear la cuenta).
+- tapOn:
+    id: "register-legal"
+- tapOn: "Crear cuenta"
 - extendedWaitUntil:
     visible: "Configuremos tu cuenta.*|.*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
     timeout: 60000
@@ -84,7 +89,7 @@ appId: com.example.netto
 
 # ---- Inicio ----
 - extendedWaitUntil:
-    visible: "SALDO DISPONIBLE DEL MES"
+    visible: "Te queda este mes"
     timeout: 15000
 - assertVisible: "Gs. 5.000.000"
 - assertVisible: "Todavía no cargaste ningún pago.*"

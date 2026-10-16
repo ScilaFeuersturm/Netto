@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 
 import { CURRENCY_CODES, Currencies, rateOf, type CurrencyCode } from '@/domain/currency';
 import { timestampEs } from '@/domain/dates';
+import { LegalLinks, SUPPORT_EMAIL } from '@/domain/legal';
 import { formatMoney, formatRate, parseAmount, parseRateInput, rateToInput, sanitizeAmountInput } from '@/domain/format';
 import { RATES_SOURCE_NAME, refreshRates, setManualRate } from '@/data/rates';
 import { setDisplayCurrency } from '@/data/repository';
@@ -12,7 +13,7 @@ import { useAppData } from '@/state/AppDataProvider';
 import { LOCK_AFTER_MS } from '@/domain/lockPolicy';
 import { useAppLock } from '@/state/AppLock';
 import { CurrencySelector, Dialog, SwitchRow, TextField } from '@/ui/form';
-import { Card, IconButton, Text, TonalButton } from '@/ui/primitives';
+import { Card, Divider, IconButton, Text, TextButton, TonalButton } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
 
@@ -65,6 +66,8 @@ export default function ProfileScreen() {
 
       <CalculatorCard />
 
+      <LegalCard />
+
       <AccountActions />
 
       {editingRate && (
@@ -81,6 +84,27 @@ export default function ProfileScreen() {
         />
       )}
     </ScreenScroll>
+  );
+}
+
+/** Términos, privacidad y contacto, que las tiendas piden tener a mano dentro de la app. */
+function LegalCard() {
+  const { colors } = useTheme();
+  const open = (url: string) => () => void Linking.openURL(url);
+  return (
+    <Card>
+      <Text variant="titleMedium">Privacidad y ayuda</Text>
+      <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+        {`¿Dudas o problemas? Escribinos a ${SUPPORT_EMAIL}.`}
+      </Text>
+      <View style={{ marginTop: 8 }}>
+        <TextButton text="Política de privacidad" onPress={open(LegalLinks.privacy)} />
+        <Divider />
+        <TextButton text="Términos y condiciones" onPress={open(LegalLinks.terms)} />
+        <Divider />
+        <TextButton text="Escribir a soporte" onPress={open(`mailto:${SUPPORT_EMAIL}?subject=Netto`)} />
+      </View>
+    </Card>
   );
 }
 

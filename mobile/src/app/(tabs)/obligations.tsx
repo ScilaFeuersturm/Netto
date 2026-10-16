@@ -71,28 +71,31 @@ export default function ObligationsListScreen() {
 }
 
 function CycleHero({ state, target }: { state: ObligationsState; target: keyof typeof Currencies }) {
-  const { colors } = useTheme();
   const next = state.nextDue;
   return (
     <HeroCard>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Icon name="calendar-month" size={18} color={Hero.onColorMuted} />
         <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1, marginLeft: 6 }}>
-          CICLO {longEs(currentYearMonth()).toUpperCase()}
+          {longEs(currentYearMonth())}
         </Text>
         {state.activeCount > 0 && (
-          <Tag text={`${state.activeCount} ${state.activeCount === 1 ? 'factura activa' : 'facturas activas'}`} />
+          <Tag
+            text={`${state.activeCount} ${state.activeCount === 1 ? 'factura activa' : 'facturas activas'}`}
+            container={Hero.tile}
+            contentColor={Hero.onColor}
+          />
         )}
       </View>
       <View>
-        <Text color={Hero.onColorMuted}>Total por pagar este mes</Text>
+        <Text color={Hero.onColorMuted}>Por pagar este mes</Text>
         <HeroAmount prefix={Currencies[target].symbol} amount={formatAmount(state.pendingThisMonth, target)} />
       </View>
       {next && (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Dot color={colors.tertiary} />
+          <Dot color={Hero.highlight} />
           <Text variant="labelMedium" color={Hero.onColor} numberOfLines={1} style={{ flex: 1, marginHorizontal: 8 }}>
-            {`Próximo: ${next.name} • ${dueLabel(next.dueDate, obligationStatus(next.dueDate, false, today()), today())}`}
+            {`Próximo: ${next.name}, ${dueLabel(next.dueDate, obligationStatus(next.dueDate, false, today()), today()).toLowerCase()}`}
           </Text>
           <Text variant="labelMedium" color={Hero.onColorMuted}>
             {formatMoney(next.amount, next.currency)}
@@ -110,7 +113,7 @@ function ScanCard({ onScan }: { onScan: () => void }) {
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <IconBox icon="document-scanner" container={colors.primaryContainer} size={48} />
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text variant="titleMedium">Escanear Factura</Text>
+          <Text variant="titleMedium">Escanear factura</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
             Sacale una foto o elegí una imagen. Detectamos automáticamente el monto y la fecha límite.
           </Text>

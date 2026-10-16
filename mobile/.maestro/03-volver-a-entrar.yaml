@@ -11,6 +11,10 @@ appId: com.example.netto
     timeout: 60000
 - tapOn:
     id: "login-email"
+# Android puede ofrecer contraseñas guardadas en Google: se rechaza para escribir la de prueba.
+- tapOn:
+    text: "No, gracias|No thanks"
+    optional: true
 - inputText: ${EMAIL}
 - tapOn:
     id: "login-password"
@@ -24,6 +28,15 @@ appId: com.example.netto
 - eraseText: 30
 - inputText: "secreto123"
 - pressKey: Enter
+- extendedWaitUntil:
+    visible: "SALDO DISPONIBLE DEL MES|.*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    timeout: 60000
+# Android ofrece guardar la contraseña en Google: se rechaza (no guardar cuentas de prueba).
+- runFlow:
+    when:
+      visible: ".*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    commands:
+      - tapOn: "Ahora no|Not now"
 - extendedWaitUntil:
     visible: "SALDO DISPONIBLE DEL MES"
     timeout: 60000

@@ -22,7 +22,8 @@ appId: com.example.netto
     timeout: 60000
 
 # ---- Facturas ----
-- tapOn: "Facturas"
+- tapOn:
+    id: "tab-obligations"
 - assertVisible: "Escanear Factura"
 # Los filtros están en una fila que se desplaza horizontalmente.
 - swipe:
@@ -33,7 +34,8 @@ appId: com.example.netto
 - assertVisible: ".*Pagada.*"
 
 # ---- Ahorro ----
-- tapOn: "Ahorro"
+- tapOn:
+    id: "tab-budget"
 - assertVisible: "Estrategia de Ahorro"
 - assertVisible: "Distribución de Ingresos"
 - scrollUntilVisible:
@@ -45,7 +47,8 @@ appId: com.example.netto
     element: "Activo"
 
 # ---- Reportes ----
-- tapOn: "Reportes"
+- tapOn:
+    id: "tab-history"
 - assertVisible: "FLUJO NETO DISPONIBLE"
 - assertVisible: "Distribución de Gastos"
 - scrollUntilVisible:
@@ -53,7 +56,8 @@ appId: com.example.netto
 - assertVisible: "Luz ANDE.*"
 
 # ---- Escáner (solo abrir y volver a carga manual) ----
-- tapOn: "Inicio"
+- tapOn:
+    id: "tab-index"
 - tapOn: "Escanear"
 - assertVisible: "Escanear factura"
 - tapOn: "Cargar los datos manualmente"

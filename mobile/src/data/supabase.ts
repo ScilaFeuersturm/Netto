@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient, type SupportedStorage } from '@supabase/supabase-js';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 
 import { openDatabase } from './db';
 
@@ -12,11 +12,12 @@ import { openDatabase } from './db';
  * Keychain/Keystore: el mismo nivel de protección que recomienda Supabase (AES + clave en SecureStore)
  * sin sumar otra librería de cifrado.
  */
+/**
+ * En Android, "127.0.0.1" es el propio teléfono. Para usar el Supabase local desde un emulador o un
+ * celular conectado por cable: `adb reverse tcp:54321 tcp:54321` (y `tcp:8081` para Metro).
+ */
 function supabaseUrl(): string {
-  const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-  // En el emulador de Android, "localhost" es el propio emulador; la Mac se ve como 10.0.2.2.
-  if (Platform.OS === 'android') return url.replace('://127.0.0.1', '://10.0.2.2').replace('://localhost', '://10.0.2.2');
-  return url;
+  return process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 }
 
 const encryptedStorage: SupportedStorage = {

@@ -183,6 +183,7 @@ function NettoBottomBar({ state, navigation }: BottomTabBarProps) {
           return (
             <Pressable
               key={route.key}
+              testID={`tab-${tab.name}`}
               accessibilityRole="tab"
               accessibilityState={{ selected }}
               onPress={() => {

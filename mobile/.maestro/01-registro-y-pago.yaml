@@ -37,6 +37,15 @@ appId: com.example.netto
 - inputText: "secreto123"
 # Se envía con la tecla "listo" del teclado (en iPad el teclado tapa el botón).
 - pressKey: Enter
+- extendedWaitUntil:
+    visible: "Configuremos tu cuenta.*|.*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    timeout: 60000
+# Android ofrece guardar la contraseña en Google: se rechaza (no guardar cuentas de prueba).
+- runFlow:
+    when:
+      visible: ".*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    commands:
+      - tapOn: "Ahora no|Not now"
 
 # ---- Onboarding ----
 - extendedWaitUntil:
@@ -57,10 +66,14 @@ appId: com.example.netto
 - waitForAnimationToEnd
 - tapOn: "Empezar"
 # Primero la app explica para qué sirven los avisos; recién después aparece el permiso del sistema.
+# Si el permiso ya está concedido (Maestro lo concede de antemano en Android), no hay nada que explicar.
 - extendedWaitUntil:
     visible: "¿Te avisamos antes de que venzan tus facturas\\?"
     timeout: 15000
-- tapOn: "Activar avisos"
+    optional: true
+- tapOn:
+    text: "Activar avisos"
+    optional: true
 - extendedWaitUntil:
     visible: "Permitir|Allow"
     timeout: 8000

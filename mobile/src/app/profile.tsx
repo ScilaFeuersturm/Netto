@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
@@ -6,13 +7,14 @@ import { timestampEs } from '@/domain/dates';
 import { LegalLinks, SUPPORT_EMAIL } from '@/domain/legal';
 import { formatMoney, formatRate, parseAmount, parseRateInput, rateToInput, sanitizeAmountInput } from '@/domain/format';
 import { RATES_SOURCE_NAME, refreshRates, setManualRate } from '@/data/rates';
-import { setDisplayCurrency } from '@/data/repository';
+import { setDisplayCurrency, setReminderDaysBefore } from '@/data/repository';
+import { REMINDER_DAY_OPTIONS } from '@/domain/models';
 import { AccountActions, SyncCard } from '@/features/AccountActions';
 import { initialsOf } from '@/features/selectors';
 import { useAppData } from '@/state/AppDataProvider';
 import { LOCK_AFTER_MS } from '@/domain/lockPolicy';
 import { useAppLock } from '@/state/AppLock';
-import { CurrencySelector, Dialog, SwitchRow, TextField } from '@/ui/form';
+import { Chip, CurrencySelector, Dialog, SwitchRow, TextField } from '@/ui/form';
 import { Card, Divider, IconButton, Text, TextButton, TonalButton } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
@@ -53,6 +55,8 @@ export default function ProfileScreen() {
       <SyncCard />
 
       <SecurityCard />
+
+      <RemindersCard />
 
       <Card>
         <Text variant="titleMedium">Moneda de visualización</Text>
@@ -108,6 +112,34 @@ function LegalCard() {
   );
 }
 
+/** Con cuántos días de anticipación llega el primer aviso de cada factura. */
+function RemindersCard() {
+  const { colors } = useTheme();
+  const { plan } = useAppData();
+  const days = plan.reminderDaysBefore;
+  return (
+    <Card>
+      <Text variant="titleMedium" header>
+        Avisos de vencimiento
+      </Text>
+      <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+        {`Te avisamos ${days === 1 ? '1 día' : `${days} días`} antes, el día del vencimiento y al día siguiente si sigue sin pagar.`}
+      </Text>
+      {/* En varias filas y no en una que se desliza: así la opción elegida siempre está a la vista. */}
+      <View style={{ marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {REMINDER_DAY_OPTIONS.map((option) => (
+          <Chip
+            key={option}
+            label={option === 1 ? '1 día' : `${option} días`}
+            selected={option === days}
+            onPress={() => void setReminderDaysBefore(option)}
+          />
+        ))}
+      </View>
+    </Card>
+  );
+}
+
 function SecurityCard() {
   const { colors } = useTheme();
   const { biometrics, biometricUnlockEnabled, setBiometricUnlockEnabled } = useAppLock();
@@ -152,6 +184,7 @@ function AccountCard({ name, email }: { name: string; email: string }) {
           </Text>
         </View>
       </View>
+      <TonalButton text="Editar perfil" icon="edit" onPress={() => router.push('/edit-profile')} style={{ marginTop: 12 }} />
     </Card>
   );
 }

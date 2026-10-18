@@ -32,8 +32,11 @@ export function TextField({
   secure,
   right,
   style,
+  ref,
   ...inputProps
 }: {
+  /** Para mover el foco desde otro campo (React 19 pasa `ref` como una prop más). */
+  ref?: React.Ref<TextInput>;
   label: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -72,6 +75,7 @@ export function TextField({
           </Text>
         )}
         <TextInput
+          ref={ref}
           accessibilityLabel={prefix ? `${label}, en ${prefix}` : label}
           accessibilityHint={error ?? supporting}
           maxFontSizeMultiplier={2}

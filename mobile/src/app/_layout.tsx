@@ -84,6 +84,7 @@ function AppStack() {
           <Stack.Screen name="scan" />
           <Stack.Screen name="income" />
           <Stack.Screen name="profile" />
+          <Stack.Screen name="edit-profile" />
           <Stack.Screen name="reset-password" />
         </Stack.Protected>
         {/* Links de los emails: tienen que poder abrirse con o sin sesión. */}

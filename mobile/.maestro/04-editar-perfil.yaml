@@ -1,0 +1,106 @@
+# 4/4: avisos de vencimiento, nombre, email y contraseña desde el perfil (usa la cuenta de la parte 1).
+# Requiere el email de la cuenta de prueba:
+#   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
+appId: io.github.scilafeuersturm.netto
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Netto está bloqueado|Te queda este mes"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Netto está bloqueado"
+    commands:
+      - tapOn:
+          id: "unlock-password"
+      - inputText: "secreto123"
+      - pressKey: Enter
+- extendedWaitUntil:
+    visible: "Te queda este mes"
+    timeout: 60000
+- tapOn: "Perfil"
+
+# ---- Avisos: se cambia a 7 días y se vuelve a 5, el valor por defecto ----
+- scrollUntilVisible:
+    element: "Avisos de vencimiento"
+    centerElement: true
+- tapOn: "7 días"
+- assertVisible: "Te avisamos 7 días antes.*"
+- tapOn: "5 días"
+- assertVisible: "Te avisamos 5 días antes.*"
+
+# ---- Nombre ----
+- scrollUntilVisible:
+    element: "Editar perfil"
+    direction: UP
+- tapOn: "Editar perfil"
+# Dos cambios seguidos: así siempre hay algo nuevo que guardar, aunque se corra más de una vez.
+- tapOn:
+    id: "edit-name"
+- eraseText: 30
+- inputText: "Ana Prueba"
+- pressKey: Enter
+- assertVisible: "Nombre guardado."
+- tapOn:
+    id: "edit-name"
+- eraseText: 30
+- inputText: "Ana María"
+- pressKey: Enter
+- assertVisible: "Nombre guardado."
+
+# ---- Email: se pide el cambio; recién vale cuando se confirman los dos enlaces ----
+- tapOn:
+    id: "edit-email"
+- inputText: "nuevo-${EMAIL}"
+- pressKey: Enter
+- inputText: "secreto123"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Te mandamos un enlace.*"
+    timeout: 20000
+
+# ---- Contraseña: la actual incorrecta se rechaza; después se cambia y se vuelve a la original ----
+# Se pasa de un campo al siguiente con la tecla "siguiente" del teclado: el teclado tapa los de abajo.
+- scrollUntilVisible:
+    element:
+      id: "edit-confirm-password"
+- tapOn:
+    id: "edit-current-password"
+- inputText: "clave-incorrecta"
+- pressKey: Enter
+- inputText: "secreto456"
+- pressKey: Enter
+- inputText: "secreto456"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "La contraseña actual no es correcta."
+    timeout: 20000
+- tapOn:
+    id: "edit-current-password"
+- eraseText: 30
+- inputText: "secreto123"
+- pressKey: Enter
+- pressKey: Enter
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Listo, tu contraseña se actualizó.*"
+    timeout: 20000
+# Volver a la original, para que las partes 2 a 4 se puedan correr de nuevo.
+- tapOn:
+    id: "edit-current-password"
+- inputText: "secreto456"
+- pressKey: Enter
+- inputText: "secreto123"
+- pressKey: Enter
+- inputText: "secreto123"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Listo, tu contraseña se actualizó.*"
+    timeout: 20000
+
+# ---- El nombre nuevo se ve en el perfil ----
+- tapOn: "Volver"
+- scrollUntilVisible:
+    element: "Ana María"
+    direction: UP

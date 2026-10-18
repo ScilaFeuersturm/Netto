@@ -1,8 +1,8 @@
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import type { CurrencyConverter } from '@/domain/currency';
 import { shortEs, today } from '@/domain/dates';
-import { formatMoney } from '@/domain/format';
+import { formatMoney, spokenMoneyText } from '@/domain/format';
 import { CATEGORIES, dueLabel, urgencyFraction, type Obligation, type ObligationStatus } from '@/domain/models';
 
 import { Card, Icon, IconBox, PrimaryButton, ProgressBar, Stamp, Tag, Text, TonalButton } from './primitives';
@@ -38,11 +38,25 @@ export function ObligationCard({
   emphasized?: boolean;
 }) {
   const { colors } = useTheme();
+  // Con texto muy grande no entran dos columnas: el monto y el vencimiento pasan abajo del nombre.
+  const stacked = useWindowDimensions().fontScale >= 1.3;
   const palette = statusPalette(status, colors);
   const isPaid = status === 'PAGADO';
   const category = CATEGORIES[obligation.category];
   const converted =
     converter && obligation.currency !== converter.target ? converter.convert(obligation.amount, obligation.currency) : null;
+  const amountText = formatMoney(obligation.amount, obligation.currency);
+  const detailText = obligation.reference?.trim() ? `Ref: ${obligation.reference}` : category.label;
+  // Lo que lee el lector de pantalla al llegar a la tarjeta, en el orden en que importa.
+  const spokenLabel = [
+    obligation.name,
+    detailText,
+    spokenMoneyText(amountText) ?? amountText,
+    converted != null && converter ? `aproximadamente ${spokenMoneyText(formatMoney(converted, converter.target))}` : null,
+    isPaid ? null : dueLabel(obligation.dueDate, status, today()),
+  ]
+    .filter(Boolean)
+    .join('. ');
 
   return (
     // La tarjeta entera se puede tocar, pero para el lector de pantalla los datos y el botón de pago
@@ -51,22 +65,23 @@ export function ObligationCard({
       <View
         accessible
         accessibilityRole="button"
+        accessibilityLabel={spokenLabel}
         accessibilityHint="Abre el detalle del pago"
         onAccessibilityTap={onPress}
-        style={{ flexDirection: 'row', alignItems: 'flex-start' }}
+        style={{ flexDirection: 'row', alignItems: 'flex-start', flexWrap: stacked ? 'wrap' : 'nowrap' }}
       >
         <IconBox icon={category.icon} />
         <View style={{ flex: 1, paddingHorizontal: 12, gap: 2 }}>
-          <Text variant="titleMedium" numberOfLines={1}>
+          <Text variant="titleMedium" numberOfLines={2}>
             {obligation.name}
           </Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant} numberOfLines={2}>
-            {obligation.reference?.trim() ? `Ref: ${obligation.reference}` : category.label}
+            {detailText}
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+        <View style={stacked ? { width: '100%', alignItems: 'flex-start', gap: 6, marginTop: 10 } : { alignItems: 'flex-end', gap: 6 }}>
           <Text variant="amount">
-            {formatMoney(obligation.amount, obligation.currency)}
+            {amountText}
           </Text>
           {converted != null && converter && (
             <Text variant="labelSmall" color={colors.onSurfaceVariant}>
@@ -81,10 +96,10 @@ export function ObligationCard({
         <ProgressBar fraction={urgencyFraction(obligation.dueDate, isPaid, today())} color={palette.bar} style={{ marginTop: 14 }} />
       )}
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, minHeight: 36 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 8, columnGap: 6, marginTop: 12, minHeight: 36 }}>
         {isPaid ? (
           <>
-            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flex: 1 }}>
+            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flexGrow: 1, flexShrink: 1, minWidth: '50%' }}>
               {obligation.isRecurring ? 'Se repite cada mes' : 'Pago único'}
             </Text>
             <Stamp text="Pagada" detail={shortEs(obligation.paidDate ?? obligation.dueDate)} color={palette.bar} />
@@ -92,13 +107,25 @@ export function ObligationCard({
         ) : (
           <>
             <Icon name="calendar-month" size={16} color={colors.onSurfaceVariant} />
-            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flex: 1, marginLeft: 6 }}>
+            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flexGrow: 1, flexShrink: 1, minWidth: '50%' }}>
               {`Vence el ${shortEs(obligation.dueDate)}${obligation.isRecurring ? ', cada mes' : ''}`}
             </Text>
             {emphasized ? (
-              <PrimaryButton text="Pagar ahora" icon="check-circle-outline" onPress={onMarkPaid} compact />
+              <PrimaryButton
+                text="Pagar ahora"
+                icon="check-circle-outline"
+                onPress={onMarkPaid}
+                compact
+                accessibilityLabel={`Marcar ${obligation.name} como pagada`}
+              />
             ) : (
-              <TonalButton text="Marcar pagada" icon="check" onPress={onMarkPaid} compact />
+              <TonalButton
+                text="Marcar pagada"
+                icon="check"
+                onPress={onMarkPaid}
+                compact
+                accessibilityLabel={`Marcar ${obligation.name} como pagada`}
+              />
             )}
           </>
         )}

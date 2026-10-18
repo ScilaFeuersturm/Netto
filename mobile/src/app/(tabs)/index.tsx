@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { Currencies } from '@/domain/currency';
 import { shortEs, today } from '@/domain/dates';
-import { formatAmount, formatMoney } from '@/domain/format';
+import { formatAmount, formatMoney, spokenMoneyText } from '@/domain/format';
 import { CATEGORIES, obligationStatus, type PaymentHistoryEntry } from '@/domain/models';
 import { markAsPaid } from '@/data/repository';
 import { dashboardState, headerState, type DashboardState } from '@/features/selectors';
@@ -95,13 +95,14 @@ function Greeting({ userName, hasAlerts, onBellPress }: { userName: string; hasA
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <View style={{ flex: 1 }}>
-        <Text variant="headlineMedium" color={colors.onBackground}>
+        <Text variant="headlineMedium" color={colors.onBackground} header>
           {userName ? `¡Hola, ${userName}!` : '¡Hola!'}
         </Text>
       </View>
       <Pressable
         onPress={onBellPress}
-        accessibilityLabel="Vencimientos"
+        accessibilityRole="button"
+        accessibilityLabel={hasAlerts ? 'Vencimientos, tenés facturas por vencer' : 'Vencimientos'}
         style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.surfaceVariant, alignItems: 'center', justifyContent: 'center' }}
       >
         <Icon name="notifications-none" />
@@ -121,8 +122,9 @@ function BalanceHero({ state, currency }: { state: DashboardState; currency: key
         : null;
   return (
     <HeroCard>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1 }}>
+      {/* Si con texto grande no entran en un renglón, la etiqueta baja abajo del rótulo. */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
+        <Text variant="overline" color={Hero.onColorMuted} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
           Te queda este mes
         </Text>
         {badge && <Tag text={badge} container={Hero.tile} contentColor={Hero.onColor} />}
@@ -142,7 +144,7 @@ function BalanceHero({ state, currency }: { state: DashboardState; currency: key
 function HeroMetric({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <HeroTile style={{ flex: 1 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View accessible accessibilityLabel={`${label}: ${spokenMoneyText(value) ?? value}`} style={{ flexDirection: 'row', alignItems: 'center' }}>
         <IconBox icon={icon} container={Hero.tile} tint={Hero.onColor} size={32} />
         <View style={{ marginLeft: 8, flex: 1 }}>
           <Text variant="labelSmall" color={Hero.onColorMuted} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
@@ -175,7 +177,7 @@ function QuickAction({
         <IconBox icon={icon} container={highlighted ? colors.primaryContainer : colors.secondaryContainer} size={48} />
         {highlighted && <Dot color={colors.secondary} style={{ position: 'absolute', top: 2, right: 2 }} />}
       </View>
-      <Text variant="titleSmall" style={{ marginTop: 10 }}>
+      <Text variant="titleSmall" style={{ marginTop: 10 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
         {title}
       </Text>
     </Card>
@@ -192,7 +194,7 @@ function RecentActivity({ payments }: { payments: PaymentHistoryEntry[] }) {
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
             <IconBox icon={CATEGORIES[payment.category].icon} size={40} />
             <View style={{ flex: 1, paddingHorizontal: 12 }}>
-              <Text variant="titleSmall" numberOfLines={1}>
+              <Text variant="titleSmall" numberOfLines={2}>
                 {payment.obligationName}
               </Text>
               <Text variant="bodySmall" color={colors.onSurfaceVariant} numberOfLines={1}>

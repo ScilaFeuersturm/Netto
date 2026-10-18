@@ -51,12 +51,13 @@ export default function BudgetScreen() {
               {activeModel.title}
             </Text>
           </View>
-          <Text variant="headlineMedium" color={colors.onBackground}>
+          <Text variant="headlineMedium" color={colors.onBackground} header>
             Estrategia de ahorro
           </Text>
         </View>
         <Pressable
           onPress={manageIncome}
+          accessibilityRole="button"
           accessibilityLabel="Gestionar ingresos"
           style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surfaceVariant, alignItems: 'center', justifyContent: 'center' }}
         >
@@ -81,7 +82,7 @@ export default function BudgetScreen() {
       <IncomeDistributionCard state={state} plan={plan} currency={currency} bucketColors={bucketColors} />
 
       <Card>
-        <Text variant="titleLarge">Progreso este mes</Text>
+        <Text variant="titleLarge" header>Progreso este mes</Text>
         <Text variant="bodySmall" color={colors.onSurfaceVariant}>
           Gastos del mes contra lo asignado a cada grupo
         </Text>
@@ -105,7 +106,7 @@ export default function BudgetScreen() {
 
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Icon name="auto-awesome" color={colors.onBackground} />
-        <Text variant="titleLarge" style={{ flex: 1, marginLeft: 8 }} color={colors.onBackground}>
+        <Text variant="titleLarge" style={{ flex: 1, marginLeft: 8 }} color={colors.onBackground} header>
           Modelos sugeridos
         </Text>
         <Tag text={`${BUDGET_MODELS.length} opciones`} />
@@ -192,9 +193,9 @@ function SavingsHero({
       </View>
 
       <HeroTile>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
           <Dot color={Hero.positive} />
-          <Text variant="titleSmall" color={Hero.onColor} style={{ flex: 1, marginLeft: 8 }}>
+          <Text variant="titleSmall" color={Hero.onColor} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
             Meta de ahorro ({plan.ahorroPercent}%)
           </Text>
           <Text variant="labelMedium" color={Hero.positive}>
@@ -202,8 +203,8 @@ function SavingsHero({
           </Text>
         </View>
         <ProgressBar fraction={progress} color={Hero.positive} trackColor="rgba(0,0,0,0.25)" style={{ marginVertical: 10 }} />
-        <View style={{ flexDirection: 'row' }}>
-          <Text variant="labelSmall" color={Hero.onColorMuted} style={{ flex: 1 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
+          <Text variant="labelSmall" color={Hero.onColorMuted} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
             Actual: {formatMoney(state.ahorroReal, currency)}
           </Text>
           <Text variant="labelSmall" color={Hero.onColorMuted}>
@@ -212,8 +213,13 @@ function SavingsHero({
         </View>
       </HeroTile>
 
-      <Pressable onPress={onManageIncome} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 2 }}>
-        <Text variant="labelMedium" color={Hero.onColorMuted} style={{ flex: 1 }}>
+      <Pressable
+        onPress={onManageIncome}
+        accessibilityRole="button"
+        hitSlop={12}
+        style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, paddingVertical: 2 }}
+      >
+        <Text variant="labelMedium" color={Hero.onColorMuted} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
           Ingreso mensual: {formatMoney(state.totalIncome, currency)}
         </Text>
         <Text variant="labelMedium" color={Hero.onColor}>
@@ -256,9 +262,9 @@ function IncomeDistributionCard({
 
   return (
     <Card>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-          <Text variant="titleLarge">Distribución de ingresos</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
+        <View style={{ flexGrow: 1, flexShrink: 1, minWidth: '60%' }}>
+          <Text variant="titleLarge" header>Distribución de ingresos</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
             Cómo se reparte tu ingreso según tu modelo
           </Text>

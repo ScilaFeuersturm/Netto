@@ -20,7 +20,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
         Netto
       </Text>
       <View style={{ gap: 4, marginBottom: 8 }}>
-        <Text variant="titleLarge" color={colors.onBackground}>
+        <Text variant="titleLarge" color={colors.onBackground} header>
           {title}
         </Text>
         <Text color={colors.onSurfaceVariant}>{subtitle}</Text>

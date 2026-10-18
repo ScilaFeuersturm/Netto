@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 
 import { Currencies, type CurrencyCode } from '@/domain/currency';
 import { currentYearMonth, longEs, shortEs, ymKey, type YearMonth } from '@/domain/dates';
-import { formatAmount, formatMoney } from '@/domain/format';
+import { formatAmount, formatMoney, spokenMoneyText } from '@/domain/format';
 import { CATEGORIES } from '@/domain/models';
 import { reportsState, type ReportsState } from '@/features/selectors';
 import { useAppData } from '@/state/AppDataProvider';
@@ -67,6 +67,7 @@ function MonthPill({ month, selected, onPress }: { month: YearMonth; selected: b
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
       accessibilityState={{ selected }}
       style={{
         flexDirection: 'row',
@@ -93,8 +94,8 @@ function NetFlowHero({ state, currency }: { state: ReportsState; currency: Curre
   const positive = state.netFlow >= 0;
   return (
     <HeroCard>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
+        <Text variant="overline" color={Hero.onColorMuted} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
           Ingresos menos pagos del mes
         </Text>
         <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: Hero.tile, alignItems: 'center', justifyContent: 'center' }}>
@@ -136,14 +137,18 @@ function FlowTile({
   captionColor: string;
 }) {
   return (
-    <HeroTile style={{ flex: 1 }}>
+    <HeroTile
+      style={{ flex: 1 }}
+      accessible
+      accessibilityLabel={`${label}: ${spokenMoneyText(value) ?? value}. ${caption}`}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Icon name={icon} size={14} color={Hero.onColorMuted} />
         <Text variant="labelSmall" color={Hero.onColorMuted} style={{ marginLeft: 4 }}>
           {label}
         </Text>
       </View>
-      <Text variant="titleMedium" weight="bold" color={Hero.onColor} numberOfLines={1}>
+      <Text variant="titleMedium" weight="bold" color={Hero.onColor} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6}>
         {value}
       </Text>
       <Text variant="labelSmall" color={captionColor}>
@@ -159,9 +164,9 @@ function ExpenseDistributionCard({ state, currency }: { state: ReportsState; cur
   const n = state.categories.length;
   return (
     <Card>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-          <Text variant="titleLarge">Distribución de gastos</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
+        <View style={{ flexGrow: 1, flexShrink: 1, minWidth: '60%' }}>
+          <Text variant="titleLarge" header>Distribución de gastos</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
             Desglose de {formatMoney(state.totalExpenses, currency)} del mes
           </Text>
@@ -189,7 +194,7 @@ function ExpenseDistributionCard({ state, currency }: { state: ReportsState; cur
             <View key={share.category} style={{ gap: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Dot color={color} />
-                <Text numberOfLines={1} style={{ flex: 1, marginHorizontal: 8 }}>
+                <Text numberOfLines={2} style={{ flex: 1, marginHorizontal: 8 }}>
                   {CATEGORIES[share.category].label}
                 </Text>
                 <Text weight="bold">{formatMoney(share.amount, currency)}</Text>
@@ -212,7 +217,7 @@ function PaymentHistoryCard({ state, month }: { state: ReportsState; month: Year
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Icon name="history" color={colors.onSurfaceVariant} />
-        <Text variant="titleLarge" style={{ flex: 1, marginLeft: 8 }}>
+        <Text variant="titleLarge" style={{ flex: 1, marginLeft: 8 }} header>
           Historial de pagos
         </Text>
         <Text variant="labelMedium" color={colors.onSurfaceVariant}>
@@ -234,7 +239,7 @@ function PaymentHistoryCard({ state, month }: { state: ReportsState; month: Year
           >
             <IconBox icon={CATEGORIES[entry.category].icon} container={colors.primaryContainer} size={40} />
             <View style={{ flex: 1, paddingHorizontal: 12 }}>
-              <Text variant="titleSmall" numberOfLines={1}>
+              <Text variant="titleSmall" numberOfLines={2}>
                 {entry.obligationName}
               </Text>
               <Text variant="labelSmall" color={colors.onSurfaceVariant}>

@@ -49,7 +49,9 @@ function NettoTopBar() {
   return (
     <View style={{ backgroundColor: colors.background, paddingTop: insets.top }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10 }}>
-        <Text variant="titleLarge" color={colors.onBackground} style={{ flex: 1 }}>
+        {/* Las barras superior e inferior están siempre en pantalla: crecen poco con el texto grande,
+            como las barras del sistema, para dejarle lugar al contenido. */}
+        <Text variant="titleLarge" color={colors.onBackground} style={{ flex: 1 }} maxFontSizeMultiplier={1.3} header>
           Netto
         </Text>
         <CurrencyMenu selected={header.displayCurrency} onSelect={(c) => void setDisplayCurrency(c)} />
@@ -68,7 +70,7 @@ function NettoTopBar() {
           }}
         >
           {header.initials ? (
-            <Text variant="labelLarge" color={colors.onPrimaryContainer}>
+            <Text variant="labelLarge" color={colors.onPrimaryContainer} maxFontSizeMultiplier={1}>
               {header.initials}
             </Text>
           ) : (
@@ -106,7 +108,7 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
       <Pressable
         onPress={() => setOpen(true)}
         accessibilityRole="button"
-        accessibilityLabel="Cambiar moneda"
+        accessibilityLabel={`Moneda: ${Currencies[selected].label}. Cambiar moneda`}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -117,7 +119,7 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
         }}
       >
         <Icon name="currency-exchange" size={16} />
-        <Text variant="labelLarge" style={{ marginHorizontal: 6 }}>
+        <Text variant="labelLarge" style={{ marginHorizontal: 6 }} maxFontSizeMultiplier={1.3}>
           {selected}
         </Text>
         <Icon name="keyboard-arrow-down" size={16} />
@@ -143,6 +145,8 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
             {CURRENCY_CODES.map((code) => (
               <Pressable
                 key={code}
+                accessibilityRole="button"
+                accessibilityState={{ selected: code === selected }}
                 onPress={() => {
                   setOpen(false);
                   onSelect(code);
@@ -158,7 +162,7 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
                 <Text variant="bodyLarge" style={{ flex: 1 }}>
                   {`${Currencies[code].symbol}  ${Currencies[code].label}`}
                 </Text>
-                {code === selected && <Text color={colors.secondary}>✓</Text>}
+                {code === selected && <Icon name="check" size={18} color={colors.primary} />}
               </Pressable>
             ))}
           </View>
@@ -200,7 +204,7 @@ function NettoBottomBar({ state, navigation }: BottomTabBarProps) {
               })}
             >
               <Icon name={tab.icon} size={24} color={color} />
-              <Text variant="labelMedium" weight={selected ? 'bold' : 'medium'} color={color}>
+              <Text variant="labelMedium" weight={selected ? 'bold' : 'medium'} color={color} maxFontSizeMultiplier={1.2} numberOfLines={1}>
                 {tab.label}
               </Text>
             </Pressable>

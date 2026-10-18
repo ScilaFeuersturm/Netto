@@ -50,7 +50,8 @@ export function TextField({
   const borderColor = error ? colors.error : focused ? colors.primary : colors.outline;
   return (
     <View style={[{ gap: 4 }, style]}>
-      <Text variant="labelMedium" color={error ? colors.error : colors.onSurfaceVariant}>
+      {/* La etiqueta visible se le pasa al campo; el lector no la lee dos veces. */}
+      <Text variant="labelMedium" color={error ? colors.error : colors.onSurfaceVariant} importantForAccessibility="no" accessibilityElementsHidden>
         {label}
       </Text>
       <View
@@ -66,11 +67,14 @@ export function TextField({
         }}
       >
         {prefix && (
-          <Text variant="bodyLarge" color={colors.onSurfaceVariant} style={{ marginRight: 4 }}>
+          <Text variant="bodyLarge" color={colors.onSurfaceVariant} style={{ marginRight: 4 }} importantForAccessibility="no" accessibilityElementsHidden>
             {prefix}
           </Text>
         )}
         <TextInput
+          accessibilityLabel={prefix ? `${label}, en ${prefix}` : label}
+          accessibilityHint={error ?? supporting}
+          maxFontSizeMultiplier={2}
           {...inputProps}
           value={value}
           onChangeText={onChangeText}
@@ -91,7 +95,12 @@ export function TextField({
         {right}
       </View>
       {(error || supporting) && (
-        <Text variant="bodySmall" color={error ? colors.error : colors.onSurfaceVariant}>
+        <Text
+          variant="bodySmall"
+          color={error ? colors.error : colors.onSurfaceVariant}
+          // Ya va como pista del campo; en Android, además, el error se anuncia al aparecer.
+          accessibilityLiveRegion={error ? 'polite' : 'none'}
+        >
           {error ?? supporting}
         </Text>
       )}
@@ -267,6 +276,8 @@ export function DateButton({ label, value, onChange }: { label: string; value: E
     <>
       <Pressable
         onPress={open}
+        accessibilityRole="button"
+        accessibilityHint="Abre el calendario"
         style={({ pressed }) => ({
           flexDirection: 'row',
           alignItems: 'center',
@@ -276,11 +287,13 @@ export function DateButton({ label, value, onChange }: { label: string; value: E
           borderColor: colors.outline,
           borderRadius: Radius.sm,
           minHeight: 48,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
           opacity: pressed ? 0.7 : 1,
         })}
       >
         <Icon name="calendar-today" size={18} color={colors.primary} />
-        <Text variant="labelLarge" color={colors.primary}>
+        <Text variant="labelLarge" color={colors.primary} style={{ flexShrink: 1, textAlign: 'center' }}>
           {label}
         </Text>
       </Pressable>
@@ -337,10 +350,12 @@ export function Dialog({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 24 }}>
-        <View style={{ backgroundColor: colors.surface, borderRadius: Radius.xl, padding: 24, gap: 12 }}>
-          <Text variant="headlineSmall">{title}</Text>
+        <View accessibilityViewIsModal style={{ backgroundColor: colors.surface, borderRadius: Radius.xl, padding: 24, gap: 12 }}>
+          <Text variant="headlineSmall" header>
+            {title}
+          </Text>
           {children}
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 16 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', columnGap: 16 }}>
             <TextButton text={cancelText} onPress={onDismiss} />
             <TextButton text={confirmText} onPress={onConfirm} />
           </View>

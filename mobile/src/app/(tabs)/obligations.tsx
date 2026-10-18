@@ -51,6 +51,7 @@ export default function ObligationsListScreen() {
 
       <Pressable
         onPress={() => router.push('/obligation')}
+        accessibilityRole="button"
         style={({ pressed }) => ({
           flexDirection: 'row',
           justifyContent: 'center',
@@ -74,9 +75,9 @@ function CycleHero({ state, target }: { state: ObligationsState; target: keyof t
   const next = state.nextDue;
   return (
     <HeroCard>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
         <Icon name="calendar-month" size={18} color={Hero.onColorMuted} />
-        <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1, marginLeft: 6 }}>
+        <Text variant="overline" color={Hero.onColorMuted} style={{ flexGrow: 1, flexShrink: 1, minWidth: '55%' }}>
           {longEs(currentYearMonth())}
         </Text>
         {state.activeCount > 0 && (
@@ -94,7 +95,7 @@ function CycleHero({ state, target }: { state: ObligationsState; target: keyof t
       {next && (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Dot color={Hero.highlight} />
-          <Text variant="labelMedium" color={Hero.onColor} numberOfLines={1} style={{ flex: 1, marginHorizontal: 8 }}>
+          <Text variant="labelMedium" color={Hero.onColor} numberOfLines={2} style={{ flex: 1, marginHorizontal: 8 }}>
             {`Próximo: ${next.name}, ${dueLabel(next.dueDate, obligationStatus(next.dueDate, false, today()), today()).toLowerCase()}`}
           </Text>
           <Text variant="labelMedium" color={Hero.onColorMuted}>

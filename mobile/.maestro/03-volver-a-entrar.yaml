@@ -46,5 +46,5 @@ appId: com.example.netto
     visible: "Luz ANDE.*"
     timeout: 30000
 - scrollUntilVisible:
-    element: "-Gs. 350.000"
+    element: "-Gs\\. 350\\.000|menos 350\\.000 guaraníes"
     centerElement: true

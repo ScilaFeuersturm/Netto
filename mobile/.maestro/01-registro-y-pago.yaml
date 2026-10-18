@@ -1,5 +1,5 @@
-# 1/3: registro, onboarding, carga de una factura y pago.
-# Correr las tres partes en orden: ~/.maestro/bin/maestro test .maestro/
+# 1/5: registro, onboarding, carga de una factura y pago.
+# Correr las cinco partes en orden (el Supabase local tiene que estar andando): ~/.maestro/bin/maestro test .maestro/
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
 appId: io.github.scilafeuersturm.netto

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { notifyDataChanged } from '@/data/db';
+import { usePremium } from '@/data/premium';
 import { prepareNotifications, requestNotificationPermission } from '@/services/reminders';
 import { Dialog } from '@/ui/form';
 import { Icon, Text } from '@/ui/primitives';
@@ -13,18 +14,20 @@ const PRIMED_KEY = 'notifications_primed';
 /**
  * Explica para qué sirven los recordatorios antes de mostrar el pedido de permiso del sistema
  * (si se rechaza en el sistema, después solo se puede activar desde los ajustes del teléfono).
- * Se muestra una sola vez.
+ * Se muestra una sola vez, y solo con Premium: en el plan gratis no hay avisos, así que no se pide
+ * un permiso que no se va a usar (y se reserva para cuando lo active).
  */
 export function NotificationPrimer() {
   const { colors } = useTheme();
+  const { premium } = usePremium();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (Storage.getItemSync(PRIMED_KEY) === 'true') return;
+    if (!premium || Storage.getItemSync(PRIMED_KEY) === 'true') return;
     prepareNotifications()
       .then((status) => setVisible(status === 'undetermined'))
       .catch(() => {});
-  }, []);
+  }, [premium]);
 
   const close = async (activate: boolean) => {
     setVisible(false);

@@ -1,5 +1,5 @@
 // Tests del backend contra el Supabase local (`npx supabase start`).
-// Correr desde la raíz del repo: node --test supabase/tests/
+// Correr desde la raíz del repo: node --test supabase/tests/backend.test.mjs
 // Verifica seguridad por fila (RLS), la regla "gana el último", validaciones y el borrado de cuenta.
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -15,6 +15,13 @@ const API_URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
 const ANON_KEY =
   process.env.SUPABASE_ANON_KEY ??
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+
+// Clave de servicio de demostración del Supabase local (la misma en todas las instalaciones locales):
+// hace de servidor, que es el único que puede dar Premium.
+const SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_KEY ??
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+const server = createClient(API_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
 async function newUser(name) {
   const client = createClient(API_URL, ANON_KEY, { auth: { persistSession: false } });
@@ -146,4 +153,30 @@ test('borrar la cuenta elimina al usuario y todos sus datos', async () => {
     password: 'secreto123',
   });
   assert.ok(relogin.error, 'la cuenta ya no existe');
+});
+
+test('nadie puede darse Premium a sí mismo', async () => {
+  const until = new Date(Date.now() + 365 * 864e5).toISOString();
+  const insert = await ana.client.from('entitlements').insert({ user_id: ana.id, premium_until: until, source: 'manual' });
+  assert.ok(insert.error, 'un usuario no puede crear su propia fila de Premium');
+  const { data } = await ana.client.from('entitlements').select('*');
+  assert.equal(data.length, 0);
+});
+
+test('cada usuario ve solo su Premium, y no lo puede modificar', async () => {
+  const until = new Date(Date.now() + 30 * 864e5).toISOString();
+  const grant = await server.from('entitlements').insert({ user_id: beto.id, premium_until: until, source: 'manual' });
+  assert.equal(grant.error, null, grant.error?.message);
+
+  const mine = await beto.client.from('entitlements').select('premium_until');
+  assert.equal(mine.data.length, 1);
+  assert.equal(Date.parse(mine.data[0].premium_until), Date.parse(until));
+
+  const others = await ana.client.from('entitlements').select('*');
+  assert.equal(others.data.length, 0, 'Ana no ve el Premium de Beto');
+
+  const later = new Date(Date.now() + 3650 * 864e5).toISOString();
+  await beto.client.from('entitlements').update({ premium_until: later }).eq('user_id', beto.id);
+  const after = await server.from('entitlements').select('premium_until').eq('user_id', beto.id).single();
+  assert.equal(Date.parse(after.data.premium_until), Date.parse(until), 'Beto no puede alargar su Premium');
 });

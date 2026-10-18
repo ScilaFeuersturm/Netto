@@ -7,6 +7,7 @@ import { pendingChanges } from '@/sync/engine';
 
 import { getDb, notifyDataChanged, openDatabase, USER_TABLES } from './db';
 import { hashPassword, verifyPassword } from './passwordHasher';
+import { clearPremium } from './premium';
 import { deleteSecureItem, getSecureItem, setSecureItem } from './secureStorage';
 import { clearSession, currentUserId, startSession } from './session';
 import { supabase } from './supabase';
@@ -113,7 +114,9 @@ export async function logout({ force = false }: { force?: boolean } = {}): Promi
 
 async function signOutLocally(): Promise<void> {
   signingOut = true;
+  const userId = currentUserId();
   try {
+    if (userId) await clearPremium(userId);
     await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     await wipeLocalUserData();
   } finally {

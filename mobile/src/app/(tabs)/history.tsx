@@ -10,9 +10,22 @@ import { reportsState, type ReportsState } from '@/features/selectors';
 import { useAppData } from '@/state/AppDataProvider';
 import { Card, Dot, HeroAmount, HeroCard, HeroTile, Icon, IconBox, ProgressBar, ScreenPadding, Tag, Text, TonalButton } from '@/ui/primitives';
 import { Hero, useTheme } from '@/ui/theme';
+import { PremiumScreen } from '@/features/Premium';
 
 /** Pantalla "Reportes": flujo neto del mes, distribución de gastos por categoría e historial de pagos. */
-export default function HistoryScreen() {
+export default function HistoryScreenGate() {
+  return (
+    <PremiumScreen
+      icon="insights"
+      title="Reportes"
+      description="Mirá cuánto entró y cuánto pagaste cada mes, en qué categorías se va tu plata y el historial completo de pagos."
+    >
+      <HistoryScreen />
+    </PremiumScreen>
+  );
+}
+
+function HistoryScreen() {
   const data = useAppData();
   const [selectedMonth, setSelectedMonth] = useState<YearMonth>(currentYearMonth);
   const state = useMemo(() => reportsState(data, selectedMonth), [data, selectedMonth]);

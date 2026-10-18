@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
 import { CURRENCY_CODES, Currencies, rateOf, type CurrencyCode } from '@/domain/currency';
-import { timestampEs } from '@/domain/dates';
+import { fromLocalDate, numericEs, timestampEs } from '@/domain/dates';
 import { LegalLinks, SUPPORT_EMAIL } from '@/domain/legal';
 import { formatMoney, formatRate, parseAmount, parseRateInput, rateToInput, sanitizeAmountInput } from '@/domain/format';
 import { RATES_SOURCE_NAME, refreshRates, setManualRate } from '@/data/rates';
 import { setDisplayCurrency, setReminderDaysBefore } from '@/data/repository';
 import { REMINDER_DAY_OPTIONS } from '@/domain/models';
+import { usePremium } from '@/data/premium';
+import { goToPremium, PremiumLocked } from '@/features/Premium';
 import { AccountActions, SyncCard } from '@/features/AccountActions';
 import { initialsOf } from '@/features/selectors';
 import { useAppData } from '@/state/AppDataProvider';
@@ -51,6 +53,8 @@ export default function ProfileScreen() {
   return (
     <ScreenScroll title="Tu perfil">
       <AccountCard name={user?.name ?? ''} email={user?.email ?? ''} />
+
+      <PlanCard />
 
       <SyncCard />
 
@@ -112,11 +116,45 @@ function LegalCard() {
   );
 }
 
+/** Plan actual (gratis o Premium) y acceso a la pantalla de planes. */
+function PlanCard() {
+  const { colors } = useTheme();
+  const { premium, until } = usePremium();
+  return (
+    <Card>
+      <Text variant="titleMedium" header>
+        {premium ? 'Tenés Netto Premium' : 'Plan gratis'}
+      </Text>
+      <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+        {premium && until != null
+          ? `Activo hasta el ${numericEs(fromLocalDate(new Date(until)))}.`
+          : 'Cargás facturas e ingresos, marcás pagos y ves tu saldo del mes. Con Premium sumás escaneo, avisos, ahorro y reportes.'}
+      </Text>
+      <TonalButton
+        text={premium ? 'Ver mi plan' : 'Ver Premium'}
+        icon="workspace-premium"
+        onPress={goToPremium}
+        style={{ marginTop: 12 }}
+      />
+    </Card>
+  );
+}
+
 /** Con cuántos días de anticipación llega el primer aviso de cada factura. */
 function RemindersCard() {
   const { colors } = useTheme();
   const { plan } = useAppData();
+  const { premium } = usePremium();
   const days = plan.reminderDaysBefore;
+  if (!premium) {
+    return (
+      <PremiumLocked
+        icon="notifications-active"
+        title="Avisos de vencimiento"
+        description="Te avisamos unos días antes de que venza cada factura, el mismo día y al día siguiente si sigue sin pagar."
+      />
+    );
+  }
   return (
     <Card>
       <Text variant="titleMedium" header>

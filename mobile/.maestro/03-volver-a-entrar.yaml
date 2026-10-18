@@ -1,7 +1,7 @@
 # 3/3: login con contraseña incorrecta y luego correcta; los datos vuelven desde la nube.
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
-appId: com.example.netto
+appId: io.github.scilafeuersturm.netto
 ---
 # ---- Volver a entrar ----
 - launchApp:

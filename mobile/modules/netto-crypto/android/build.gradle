@@ -3,7 +3,7 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 
-group = 'com.example.netto'
+group = 'io.github.scilafeuersturm.netto'
 version = '1.0.0'
 
 android {

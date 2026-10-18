@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Elegí una contraseña nueva</title>
+</head>
+<body style="margin:0;padding:0;background:#EEF1F5;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EEF1F5;">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border:1px solid #D9DEE7;border-radius:8px;">
+<tr><td style="padding:28px 28px 8px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#1A2233;">
+<p style="margin:0 0 20px 0;font-size:20px;font-weight:800;color:#2340A0;">Netto</p>
+<h1 style="margin:0 0 12px 0;font-size:22px;line-height:28px;font-weight:700;color:#1A2233;">Elegí una contraseña nueva</h1>
+<p style="margin:0 0 16px 0;font-size:16px;line-height:24px;color:#1A2233;">Pediste restablecer la contraseña de tu cuenta de Netto. Tocá el botón para elegir una nueva.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 20px 0;"><tr><td style="background:#2340A0;border-radius:6px;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;">Elegir contraseña nueva</a></td></tr></table>
+<p style="margin:0 0 16px 0;font-size:14px;line-height:21px;color:#56607A;">Abrí este email desde el teléfono donde tenés Netto instalada: el botón abre la app directamente.</p>
+<p style="margin:0 0 16px 0;font-size:14px;line-height:21px;color:#56607A;">Si el botón no funciona, copiá este enlace y pegalo en el navegador del teléfono:<br><span style="word-break:break-all;color:#2340A0;">{{ .ConfirmationURL }}</span></p>
+<p style="margin:0 0 16px 0;font-size:14px;line-height:21px;color:#56607A;">El enlace vence en una hora y se puede usar una sola vez.</p>
+</td></tr>
+<tr><td style="padding:16px 28px 28px 28px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;border-top:1px dashed #D9DEE7;">
+<p style="margin:0;font-size:13px;line-height:20px;color:#56607A;">Recibiste este email porque se pidió restablecer la contraseña de {{ .Email }}. Si no fuiste vos, ignorá este email: no se hace ningún cambio. ¿Dudas? Respondé a este correo o escribinos a soporte.netto@gmail.com.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

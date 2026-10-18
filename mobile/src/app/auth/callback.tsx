@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { completeAuthFromLink } from '@/data/auth';
+import { useAppData } from '@/state/AppDataProvider';
 import { AlertBanner, TextButton } from '@/ui/primitives';
 import { useTheme } from '@/ui/theme';
 
@@ -12,6 +13,7 @@ import { useTheme } from '@/ui/theme';
  */
 export default function AuthCallbackScreen() {
   const { colors } = useTheme();
+  const { state } = useAppData();
   const { code, type, error_description: linkError } = useLocalSearchParams<{
     code?: string;
     type?: string;
@@ -34,7 +36,11 @@ export default function AuthCallbackScreen() {
       {error || !code ? (
         <>
           <AlertBanner critical message={error ?? 'El link no es válido.'} />
-          <TextButton text="Volver al inicio" onPress={() => router.replace('/')} />
+          <TextButton
+            text="Volver al inicio"
+            // Sin sesión, "/" está protegida y la navegación no va a ningún lado: se vuelve al login.
+            onPress={() => router.replace(state === 'logged_out' ? '/login' : state === 'onboarding' ? '/onboarding' : '/')}
+          />
         </>
       ) : (
         <ActivityIndicator size="large" color={colors.primary} />

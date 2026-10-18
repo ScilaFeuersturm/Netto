@@ -427,6 +427,22 @@ enable_confirmations = true
 max_frequency = "1m0s"
 otp_length = 8
 
+# Los emails de la nube salen por el servidor de Gmail de soporte.netto@gmail.com (gratis, ~500 por día).
+# La clave es una "contraseña de aplicación" de esa cuenta: no se guarda acá. Antes de un
+# `supabase config push`, exportar SUPABASE_SMTP_PASS con ella; si no, el push la deja vacía.
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 465
+user = "soporte.netto@gmail.com"
+pass = "env(SUPABASE_SMTP_PASS)"
+admin_email = "soporte.netto@gmail.com"
+sender_name = "Netto"
+
+[remotes.production.auth.rate_limit]
+# Emails por hora para todo el proyecto (el valor local, 2, no alcanza con usuarios reales).
+email_sent = 60
+
 [remotes.production.auth.mfa.totp]
 enroll_enabled = true
 verify_enabled = true

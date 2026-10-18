@@ -1,0 +1,46 @@
+/* Páginas legales de Netto: misma paleta "Boleta" que la app. */
+:root {
+  --papel: #EEF1F5;
+  --hoja: #FFFFFF;
+  --tinta: #1A2233;
+  --tinta-suave: #56607A;
+  --birome: #2340A0;
+  --regla: #D9DEE7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papel: #10151F;
+    --hoja: #1A212D;
+    --tinta: #ECEEF2;
+    --tinta-suave: #A7AFBF;
+    --birome: #9DB2F5;
+    --regla: #2F3847;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+main {
+  max-width: 44rem;
+  margin: 24px auto;
+  padding: 28px 20px 40px;
+  background: var(--hoja);
+  border: 1px solid var(--regla);
+  border-radius: 8px;
+}
+@media (max-width: 720px) { main { margin: 0; border: 0; border-radius: 0; } }
+h1 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 4px; }
+h2 { font-size: 1.15rem; margin: 2em 0 0.4em; }
+.fecha { color: var(--tinta-suave); margin: 0 0 1.5em; }
+a { color: var(--birome); }
+a:focus-visible { outline: 2px solid var(--birome); outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px 6px; border-bottom: 1px solid var(--regla); }
+th { font-weight: 600; }
+.nota { color: var(--tinta-suave); font-size: 0.95rem; }
+nav { margin-top: 2.5em; padding-top: 1em; border-top: 1px dashed var(--regla); }
+nav a { margin-right: 1.2em; }

@@ -13,7 +13,7 @@ import { TextField } from '@/ui/form';
 import {
   AlertBanner, Card, Dot, HeroAmount, HeroCard, HeroTile, Icon, IconBox, PrimaryButton, ProgressBar, ScreenPadding, Tag, Text,
 } from '@/ui/primitives';
-import { Hero, Palette, useTheme } from '@/ui/theme';
+import { Hero, useTheme } from '@/ui/theme';
 
 const MODEL_ICONS: Record<BudgetModelType, string> = {
   RULE_50_30_20: 'pie-chart',
@@ -30,7 +30,7 @@ export default function BudgetScreen() {
   const state = useMemo(() => budgetState(data), [data]);
   const activeModel = BUDGET_MODELS.find((m) => m.type === plan.modelType) ?? BUDGET_MODELS[0];
   const manageIncome = () => router.push('/income');
-  const bucketColors = { necesidades: colors.secondary, deseos: colors.tertiary, ahorro: Palette.MintMuted };
+  const bucketColors = { necesidades: colors.primary, deseos: colors.tertiary, ahorro: colors.secondary };
 
   return (
     <ScrollView contentContainerStyle={{ padding: ScreenPadding, gap: 16 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
@@ -52,7 +52,7 @@ export default function BudgetScreen() {
             </Text>
           </View>
           <Text variant="headlineMedium" color={colors.onBackground}>
-            Estrategia de Ahorro
+            Estrategia de ahorro
           </Text>
         </View>
         <Pressable
@@ -193,15 +193,15 @@ function SavingsHero({
 
       <HeroTile>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Dot color={Palette.Mint} />
+          <Dot color={Hero.positive} />
           <Text variant="titleSmall" color={Hero.onColor} style={{ flex: 1, marginLeft: 8 }}>
             Meta de ahorro ({plan.ahorroPercent}%)
           </Text>
-          <Text variant="labelMedium" color={Palette.Mint}>
+          <Text variant="labelMedium" color={Hero.positive}>
             {Math.trunc(progress * 100)}% completado
           </Text>
         </View>
-        <ProgressBar fraction={progress} color={Palette.Mint} trackColor="rgba(0,0,0,0.25)" style={{ marginVertical: 10 }} />
+        <ProgressBar fraction={progress} color={Hero.positive} trackColor="rgba(0,0,0,0.25)" style={{ marginVertical: 10 }} />
         <View style={{ flexDirection: 'row' }}>
           <Text variant="labelSmall" color={Hero.onColorMuted} style={{ flex: 1 }}>
             Actual: {formatMoney(state.ahorroReal, currency)}
@@ -258,7 +258,7 @@ function IncomeDistributionCard({
     <Card>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View style={{ flex: 1 }}>
-          <Text variant="titleLarge">Distribución de Ingresos</Text>
+          <Text variant="titleLarge">Distribución de ingresos</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
             Cómo se reparte tu ingreso según tu modelo
           </Text>

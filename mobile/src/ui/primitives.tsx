@@ -1,5 +1,4 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { LinearGradient } from 'expo-linear-gradient';
 import type { ComponentProps, ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -59,7 +58,14 @@ export function Card({
   accessible?: boolean;
 }) {
   const { colors } = useTheme();
-  const base: ViewStyle = { backgroundColor: colors.surface, borderRadius: Radius.md, padding, overflow: 'hidden' };
+  const base: ViewStyle = {
+    backgroundColor: colors.surface,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+    padding,
+    overflow: 'hidden',
+  };
   if (!onPress) return <View style={[base, style]}>{children}</View>;
   return (
     <Pressable
@@ -71,35 +77,70 @@ export function Card({
   );
 }
 
-/** Tarjeta verde oscura con degradé para el dato principal de cada pantalla. */
+/** Talón: bloque de tinta azul para el dato principal de cada pantalla. */
 export function HeroCard({ children }: { children: ReactNode }) {
+  const { dark } = useTheme();
   return (
-    <LinearGradient
-      colors={Hero.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{ borderRadius: Radius.lg, padding: 20, gap: 14 }}
-    >
+    <View style={{ backgroundColor: dark ? Hero.fillDark : Hero.fill, borderRadius: Radius.lg, padding: 20, gap: 14 }}>
       {children}
-    </LinearGradient>
+    </View>
   );
 }
 
-/** Caja translúcida dentro de una HeroCard. */
+/** Dato secundario del talón, debajo del troquel (línea punteada). */
 export function HeroTile({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[{ borderRadius: 12, backgroundColor: Hero.tile, padding: 12, gap: 2 }, style]}>{children}</View>;
+  return (
+    <View
+      style={[
+        { borderTopWidth: 1, borderStyle: 'dashed', borderColor: Hero.perforation, paddingTop: 12, gap: 2 },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
 
-/** Monto grande de las hero: símbolo chico a la izquierda y número grande. */
+/** Monto grande del talón: símbolo chico a la izquierda y número grande. */
 export function HeroAmount({ prefix, amount }: { prefix: string; amount: string }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-      <Text variant="titleMedium" color={Hero.onColorMuted} style={{ marginRight: 6, marginBottom: 8 }}>
+      <Text variant="titleMedium" color={Hero.onColorMuted} style={{ marginRight: 6, marginBottom: 9 }}>
         {prefix}
       </Text>
       <Text variant="amountDisplay" color={Hero.onColor} numberOfLines={1} adjustsFontSizeToFit style={{ flexShrink: 1 }}>
         {amount}
       </Text>
+    </View>
+  );
+}
+
+/**
+ * Sello de goma, como el "PAGADO" que ponen en la caja: borde doble, levemente torcido.
+ * Es el único adorno de la app; se usa solo para lo que ya se pagó.
+ */
+export function Stamp({ text, detail, color }: { text: string; detail?: string; color: string }) {
+  return (
+    <View
+      accessibilityLabel={detail ? `${text}, ${detail}` : text}
+      style={{
+        transform: [{ rotate: '-6deg' }],
+        borderWidth: 2,
+        borderColor: color,
+        borderRadius: Radius.sm,
+        padding: 2,
+      }}
+    >
+      <View style={{ borderWidth: 1, borderColor: color, borderRadius: Radius.xs, paddingHorizontal: 10, paddingVertical: 2, alignItems: 'center' }}>
+        <Text variant="titleSmall" weight="extrabold" color={color} style={{ letterSpacing: 0.5 }}>
+          {text}
+        </Text>
+        {detail && (
+          <Text variant="labelSmall" color={color}>
+            {detail}
+          </Text>
+        )}
+      </View>
     </View>
   );
 }
@@ -122,7 +163,7 @@ export function IconBox({
       style={{
         width: size,
         height: size,
-        borderRadius: 12,
+        borderRadius: Radius.sm,
         backgroundColor: container ?? colors.secondaryContainer,
         alignItems: 'center',
         justifyContent: 'center',
@@ -147,7 +188,7 @@ export function Tag({
 }) {
   const { colors } = useTheme();
   return (
-    <View style={[{ borderRadius: 8, backgroundColor: container ?? colors.primaryContainer, paddingHorizontal: 8, paddingVertical: 3 }, style]}>
+    <View style={[{ borderRadius: Radius.xs, backgroundColor: container ?? colors.primaryContainer, paddingHorizontal: 7, paddingVertical: 2 }, style]}>
       <Text variant="labelMedium" color={contentColor ?? colors.onPrimaryContainer}>
         {text}
       </Text>
@@ -184,7 +225,7 @@ export function SectionHeader({
       <View style={{ flex: 1 }} />
       {actionText && (
         <Pressable onPress={onAction} hitSlop={8} style={{ padding: 4 }}>
-          <Text variant="labelLarge" color={colors.secondary}>
+          <Text variant="labelLarge" color={colors.primary}>
             {actionText}
           </Text>
         </Pressable>
@@ -278,13 +319,13 @@ function BaseButton({
   );
 }
 
-/** Botón principal verde oscuro. */
+/** Botón principal en tinta azul. */
 export function PrimaryButton(props: ButtonProps) {
   const { colors } = useTheme();
   return <BaseButton {...props} container={colors.primary} content={colors.onPrimary} />;
 }
 
-/** Botón secundario con fondo suave (menta o gris verdoso). */
+/** Botón secundario con fondo suave. */
 export function TonalButton(props: ButtonProps & { container?: string; contentColor?: string }) {
   const { colors } = useTheme();
   return (
@@ -312,7 +353,7 @@ export function TextButton({ text, onPress }: { text: string; onPress: () => voi
   );
 }
 
-/** Aviso en línea. Por defecto es neutro (gris verdoso); con `critical` usa los colores de error. */
+/** Aviso en línea. Por defecto es neutro; con `critical` usa los colores de error. */
 export function AlertBanner({
   message,
   critical,
@@ -334,7 +375,7 @@ export function AlertBanner({
     <Pressable
       disabled={!onPress}
       onPress={onPress}
-      style={[{ flexDirection: 'row', alignItems: 'center', borderRadius: 12, backgroundColor: container, paddingHorizontal: 14, paddingVertical: 12 }, style]}
+      style={[{ flexDirection: 'row', alignItems: 'center', borderRadius: Radius.md, backgroundColor: container, paddingHorizontal: 14, paddingVertical: 12 }, style]}
     >
       <Icon name={icon} size={20} color={iconTint} />
       <Text color={content} style={{ marginLeft: 10, flex: 1 }}>

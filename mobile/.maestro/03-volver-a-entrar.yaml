@@ -29,7 +29,7 @@ appId: com.example.netto
 - inputText: "secreto123"
 - pressKey: Enter
 - extendedWaitUntil:
-    visible: "SALDO DISPONIBLE DEL MES|.*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    visible: "Te queda este mes|.*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
     timeout: 60000
 # Android ofrece guardar la contraseña en Google: se rechaza (no guardar cuentas de prueba).
 - runFlow:
@@ -38,7 +38,7 @@ appId: com.example.netto
     commands:
       - tapOn: "Ahora no|Not now"
 - extendedWaitUntil:
-    visible: "SALDO DISPONIBLE DEL MES"
+    visible: "Te queda este mes"
     timeout: 60000
 - assertVisible: "¡Hola, Ana!"
 # Al cerrar sesión se borraron los datos del teléfono: tienen que volver desde la nube.

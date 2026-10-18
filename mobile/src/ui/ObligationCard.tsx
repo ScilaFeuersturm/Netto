@@ -5,7 +5,7 @@ import { shortEs, today } from '@/domain/dates';
 import { formatMoney } from '@/domain/format';
 import { CATEGORIES, dueLabel, urgencyFraction, type Obligation, type ObligationStatus } from '@/domain/models';
 
-import { Card, Icon, IconBox, PrimaryButton, ProgressBar, Tag, Text, TonalButton } from './primitives';
+import { Card, Icon, IconBox, PrimaryButton, ProgressBar, Stamp, Tag, Text, TonalButton } from './primitives';
 import { statusPalette, useTheme } from './theme';
 
 /** Chip de vencimiento con el color del estado: "Vence en 2 días", "Vence mañana", "Pagada". */
@@ -18,7 +18,8 @@ export function StatusChip({ status, dueDate }: { status: ObligationStatus; dueD
 /**
  * Tarjeta de factura/vencimiento: ícono de categoría, nombre, monto, chip de vencimiento,
  * barra de urgencia y acción para marcarla como pagada.
- * Con `emphasized` el botón de pago es el principal (verde oscuro), como en el primer vencimiento del inicio.
+ * Las pagadas llevan el sello de "Pagada" en lugar del botón.
+ * Con `emphasized` el botón de pago es el principal (tinta azul), como en el primer vencimiento del inicio.
  * Si se pasa `converter` y la factura está en otra moneda, se muestra también el equivalente en la moneda de visualización.
  */
 export function ObligationCard({
@@ -64,7 +65,7 @@ export function ObligationCard({
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end', gap: 6 }}>
-          <Text variant="titleMedium" weight="bold">
+          <Text variant="amount">
             {formatMoney(obligation.amount, obligation.currency)}
           </Text>
           {converted != null && converter && (
@@ -72,25 +73,35 @@ export function ObligationCard({
               ≈ {formatMoney(converted, converter.target)}
             </Text>
           )}
-          <StatusChip status={status} dueDate={obligation.dueDate} />
+          {!isPaid && <StatusChip status={status} dueDate={obligation.dueDate} />}
         </View>
       </View>
 
-      <ProgressBar fraction={urgencyFraction(obligation.dueDate, isPaid, today())} color={palette.bar} style={{ marginTop: 14 }} />
+      {!isPaid && (
+        <ProgressBar fraction={urgencyFraction(obligation.dueDate, isPaid, today())} color={palette.bar} style={{ marginTop: 14 }} />
+      )}
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-        <Icon name={isPaid ? 'task-alt' : 'calendar-month'} size={16} color={colors.onSurfaceVariant} />
-        <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flex: 1, marginLeft: 6 }}>
-          {isPaid
-            ? `Pagada el ${shortEs(obligation.paidDate ?? obligation.dueDate)}`
-            : `Vence el ${shortEs(obligation.dueDate)}${obligation.isRecurring ? ' • Mensual' : ''}`}
-        </Text>
-        {!isPaid &&
-          (emphasized ? (
-            <PrimaryButton text="Pagar ahora" icon="check-circle-outline" onPress={onMarkPaid} compact />
-          ) : (
-            <TonalButton text="Marcar pagada" icon="check" onPress={onMarkPaid} compact />
-          ))}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, minHeight: 36 }}>
+        {isPaid ? (
+          <>
+            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flex: 1 }}>
+              {obligation.isRecurring ? 'Se repite cada mes' : 'Pago único'}
+            </Text>
+            <Stamp text="Pagada" detail={shortEs(obligation.paidDate ?? obligation.dueDate)} color={palette.bar} />
+          </>
+        ) : (
+          <>
+            <Icon name="calendar-month" size={16} color={colors.onSurfaceVariant} />
+            <Text variant="labelMedium" color={colors.onSurfaceVariant} style={{ flex: 1, marginLeft: 6 }}>
+              {`Vence el ${shortEs(obligation.dueDate)}${obligation.isRecurring ? ', cada mes' : ''}`}
+            </Text>
+            {emphasized ? (
+              <PrimaryButton text="Pagar ahora" icon="check-circle-outline" onPress={onMarkPaid} compact />
+            ) : (
+              <TonalButton text="Marcar pagada" icon="check" onPress={onMarkPaid} compact />
+            )}
+          </>
+        )}
       </View>
     </Card>
   );

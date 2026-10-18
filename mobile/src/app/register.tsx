@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Keyboard } from 'react-native';
+import { Keyboard, Linking, View } from 'react-native';
 
 import { register } from '@/data/auth';
+import { LegalLinks } from '@/domain/legal';
 import { passwordProblem, PASSWORD_HINT } from '@/domain/passwordPolicy';
 import { AuthLayout, isValidEmail } from '@/features/auth';
-import { PasswordField, TextField } from '@/ui/form';
+import { Checkbox, PasswordField, TextField } from '@/ui/form';
 import { AlertBanner, PrimaryButton, TextButton } from '@/ui/primitives';
 
 export default function RegisterScreen() {
@@ -13,6 +14,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** El servidor pide confirmar el email antes de entrar. */
@@ -22,7 +24,7 @@ export default function RegisterScreen() {
   const passwordError = password.length > 0 ? passwordProblem(password) : null;
   const confirmError = confirmPassword.length > 0 && confirmPassword !== password ? 'Las contraseñas no coinciden' : null;
   const canSubmit =
-    name.trim() !== '' && isValidEmail(email) && passwordProblem(password) == null && confirmPassword === password && !isLoading;
+    name.trim() !== '' && isValidEmail(email) && passwordProblem(password) == null && confirmPassword === password && acceptedLegal && !isLoading;
 
   const edit = (setter: (v: string) => void) => (value: string) => {
     setter(value);
@@ -89,6 +91,16 @@ export default function RegisterScreen() {
             returnKeyType="done"
             onSubmitEditing={submit}
           />
+          <Checkbox
+            testID="register-legal"
+            label="Leí y acepto los términos y condiciones y la política de privacidad."
+            checked={acceptedLegal}
+            onChange={setAcceptedLegal}
+          />
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: -8 }}>
+            <TextButton text="Ver términos" onPress={() => void Linking.openURL(LegalLinks.terms)} />
+            <TextButton text="Ver privacidad" onPress={() => void Linking.openURL(LegalLinks.privacy)} />
+          </View>
           {error && <AlertBanner message={error} critical />}
           <PrimaryButton
             text={isLoading ? 'Creando cuenta…' : 'Crear cuenta'}

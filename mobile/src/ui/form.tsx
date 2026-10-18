@@ -59,7 +59,7 @@ export function TextField({
           alignItems: 'center',
           borderWidth: focused ? 2 : 1,
           borderColor,
-          borderRadius: Radius.xs,
+          borderRadius: Radius.sm,
           paddingHorizontal: focused ? 13 : 14,
           minHeight: 52,
           backgroundColor: colors.surface,
@@ -137,13 +137,13 @@ export function Chip({ label, selected, onPress }: { label: string; selected: bo
         borderRadius: Radius.xs,
         borderWidth: selected ? 0 : 1,
         borderColor: colors.outline,
-        backgroundColor: selected ? colors.secondaryContainer : 'transparent',
+        backgroundColor: selected ? colors.primary : 'transparent',
         paddingHorizontal: selected ? 9 : 8,
         paddingVertical: selected ? 7 : 6,
       }}
     >
-      {selected && <Icon name="check" size={16} color={colors.onSecondaryContainer} />}
-      <Text variant="labelLarge" color={selected ? colors.onSecondaryContainer : colors.onSurfaceVariant}>
+      {selected && <Icon name="check" size={16} color={colors.onPrimary} />}
+      <Text variant="labelLarge" color={selected ? colors.onPrimary : colors.onSurfaceVariant}>
         {label}
       </Text>
     </Pressable>
@@ -195,6 +195,48 @@ export function SwitchRow({ label, value, onValueChange }: { label: string; valu
         thumbColor={Platform.OS === 'android' ? (value ? colors.onPrimary : colors.outline) : undefined}
       />
     </View>
+  );
+}
+
+/** Casilla de verificación con su texto al lado; todo el renglón se puede tocar. */
+export function Checkbox({
+  label,
+  checked,
+  onChange,
+  testID,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  testID?: string;
+}) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      testID={testID}
+      onPress={() => onChange(!checked)}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked }}
+      hitSlop={4}
+      style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 4 }}
+    >
+      <View
+        style={{
+          width: 22,
+          height: 22,
+          marginTop: 1,
+          borderRadius: Radius.xs,
+          borderWidth: checked ? 0 : 1.5,
+          borderColor: colors.outline,
+          backgroundColor: checked ? colors.primary : colors.surface,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {checked && <Icon name="check" size={18} color={colors.onPrimary} />}
+      </View>
+      <Text style={{ flex: 1 }}>{label}</Text>
+    </Pressable>
   );
 }
 

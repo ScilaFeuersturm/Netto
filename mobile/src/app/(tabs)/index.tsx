@@ -95,12 +95,6 @@ function Greeting({ userName, hasAlerts, onBellPress }: { userName: string; hasA
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <View style={{ flex: 1 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text variant="bodySmall" color={colors.onSurfaceVariant}>
-            Mi balance general
-          </Text>
-          <Dot color={colors.secondary} size={6} style={{ marginLeft: 6 }} />
-        </View>
         <Text variant="headlineMedium" color={colors.onBackground}>
           {userName ? `¡Hola, ${userName}!` : '¡Hola!'}
         </Text>
@@ -129,7 +123,7 @@ function BalanceHero({ state, currency }: { state: DashboardState; currency: key
     <HeroCard>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text variant="overline" color={Hero.onColorMuted} style={{ flex: 1 }}>
-          SALDO DISPONIBLE DEL MES
+          Te queda este mes
         </Text>
         {badge && <Tag text={badge} container={Hero.tile} contentColor={Hero.onColor} />}
       </View>
@@ -202,7 +196,7 @@ function RecentActivity({ payments }: { payments: PaymentHistoryEntry[] }) {
                 {payment.obligationName}
               </Text>
               <Text variant="bodySmall" color={colors.onSurfaceVariant} numberOfLines={1}>
-                {`${CATEGORIES[payment.category].label.split(' (')[0]} • ${shortEs(payment.paidDate)}`}
+                {`${CATEGORIES[payment.category].label.split(' (')[0]}, ${shortEs(payment.paidDate)}`}
               </Text>
             </View>
             <View style={{ alignItems: 'flex-end', gap: 4 }}>

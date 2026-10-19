@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#F1FAF2",
+    "backgroundColor": "#EEF1F5",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "io.github.scilafeuersturm.netto"
@@ -15,9 +15,8 @@
     "android": {
       "package": "io.github.scilafeuersturm.netto",
       "adaptiveIcon": {
-        "backgroundColor": "#1E3A2F",
+        "backgroundColor": "#1E3A8A",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -68,17 +67,18 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "imageWidth": 120,
-          "backgroundColor": "#F1FAF2",
+          "imageWidth": 140,
+          "backgroundColor": "#EEF1F5",
           "dark": {
-            "backgroundColor": "#0D1813"
+            "backgroundColor": "#10151F"
           }
         }
       ],
       [
         "expo-notifications",
         {
-          "color": "#1E3A2F"
+          "icon": "./assets/notification-icon.png",
+          "color": "#2340A0"
         }
       ],
       [

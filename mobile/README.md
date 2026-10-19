@@ -41,7 +41,20 @@ npx expo run:android
 ```
 
 Después de la primera compilación, alcanza con `npx expo start` para seguir desarrollando.
-Para compilar en la nube sin Xcode/Android Studio: `npx eas-cli@latest build --profile development`.
+
+Builds en la nube con EAS (`eas.json`):
+
+| Perfil | Para qué | Backend |
+| --- | --- | --- |
+| `development` | App de desarrollo que carga el código desde Metro | El de `.env.local` |
+| `preview` | App instalable para probar en teléfonos reales | Supabase en la nube |
+| `production` | La que va a TestFlight, Play y las tiendas (sube el número de build sola) | Supabase en la nube |
+
+```bash
+npx eas-cli@latest build --profile preview --platform all
+```
+
+El ícono y sus variantes se generan con `node scripts/generar-iconos.mjs` (no hace falta instalar nada).
 
 Pruebas de punta a punta (Maestro, con la app corriendo y el backend levantado). Son cinco partes que
 se corren en orden: registro, plan gratis, volver a entrar, Premium y editar el perfil:

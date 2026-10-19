@@ -59,7 +59,7 @@ export default function OnboardingScreen() {
   return (
     <ScreenScroll safeTop contentStyle={{ paddingHorizontal: 24, paddingTop: 32, gap: 20 }}>
       <View>
-        <Text variant="headlineMedium" color={colors.primary}>
+        <Text variant="headlineMedium" color={colors.primary} header>
           {firstName ? `¡Hola, ${firstName}!` : 'Bienvenido a Netto'}
         </Text>
         <Text color={colors.onSurfaceVariant} style={{ marginTop: 6 }}>
@@ -114,7 +114,7 @@ export default function OnboardingScreen() {
             key={model.type}
             onPress={() => setSelectedModel(model.type)}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ checked: selected }}
             style={{
               flexDirection: 'row',
               alignItems: 'center',

@@ -25,7 +25,7 @@ export function InitialSyncScreen() {
       }}
     >
       {waiting ? <ActivityIndicator size="large" color={colors.primary} /> : <Icon name="cloud-off" size={40} color={colors.primary} />}
-      <Text variant="headlineSmall" color={colors.onBackground} style={{ textAlign: 'center' }}>
+      <Text variant="headlineSmall" color={colors.onBackground} style={{ textAlign: 'center' }} header>
         {waiting ? 'Descargando tus datos…' : 'Necesitamos conexión'}
       </Text>
       <Text color={colors.onSurfaceVariant} style={{ textAlign: 'center' }}>

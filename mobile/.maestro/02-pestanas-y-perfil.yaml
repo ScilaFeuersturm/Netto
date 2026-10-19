@@ -1,7 +1,7 @@
 # 2/3: pestañas, escáner, perfil y cierre de sesión (usa los datos que deja la parte 1).
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
-appId: com.example.netto
+appId: io.github.scilafeuersturm.netto
 ---
 - launchApp:
     stopApp: true

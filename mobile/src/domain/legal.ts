@@ -13,4 +13,4 @@ export const LegalLinks = {
   deleteAccount: `${BASE_URL}/eliminar-cuenta.html`,
 };
 
-export const SUPPORT_EMAIL = 'pfeuersturm@gmail.com';
+export const SUPPORT_EMAIL = 'soporte.netto@gmail.com';

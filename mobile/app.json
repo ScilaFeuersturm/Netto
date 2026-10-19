@@ -10,10 +10,10 @@
     "backgroundColor": "#F1FAF2",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.netto"
+      "bundleIdentifier": "io.github.scilafeuersturm.netto"
     },
     "android": {
-      "package": "com.example.netto",
+      "package": "io.github.scilafeuersturm.netto",
       "adaptiveIcon": {
         "backgroundColor": "#1E3A2F",
         "foregroundImage": "./assets/android-icon-foreground.png",

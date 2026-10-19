@@ -181,6 +181,17 @@ export const Typography = {
 
 export type TypographyVariant = keyof typeof Typography;
 
+/**
+ * Cuánto puede crecer cada estilo con el texto grande del sistema. El texto de lectura llega al 200%
+ * (lo que pide WCAG 1.4.4); los títulos y montos grandes ya son grandes y crecen menos, para que
+ * una palabra no termine partida en dos renglones.
+ */
+export function maxFontScale(variant: TypographyVariant): number {
+  if (variant === 'amountDisplay' || variant.startsWith('display') || variant.startsWith('headline')) return 1.4;
+  if (variant.startsWith('title')) return 1.7;
+  return 2;
+}
+
 export function textStyle(variant: TypographyVariant, weight?: FontWeight): TextStyle {
   const v: Variant = Typography[variant];
   return {

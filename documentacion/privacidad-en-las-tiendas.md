@@ -11,7 +11,7 @@ Las filas marcadas **(con anuncios)** o **(con Premium)** se agregan recién cua
 | Política de privacidad | https://scilafeuersturm.github.io/Netto/privacidad.html |
 | Términos (Apple: EULA personalizado, opcional) | https://scilafeuersturm.github.io/Netto/terminos.html |
 | Eliminar la cuenta (Google lo exige) | https://scilafeuersturm.github.io/Netto/eliminar-cuenta.html |
-| Email de soporte | pfeuersturm@gmail.com |
+| Email de soporte | soporte.netto@gmail.com |
 
 ## Lo que NO se declara como recopilado
 

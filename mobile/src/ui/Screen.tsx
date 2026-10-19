@@ -23,7 +23,7 @@ export function ScreenHeader({ title, actions }: { title: string; actions?: Reac
       }}
     >
       <IconButton icon="arrow-back" label="Volver" onPress={() => router.back()} color={colors.onBackground} />
-      <Text variant="titleLarge" weight="bold" color={colors.onBackground} style={{ flex: 1, marginLeft: 8 }} numberOfLines={1}>
+      <Text variant="titleLarge" weight="bold" color={colors.onBackground} style={{ flex: 1, marginLeft: 8 }} numberOfLines={2} header>
         {title}
       </Text>
       {actions}

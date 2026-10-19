@@ -235,7 +235,7 @@ function LockScreen({
     >
       <View style={{ alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <Icon name="lock-outline" size={40} color={colors.primary} />
-        <Text variant="headlineSmall" color={colors.onBackground}>
+        <Text variant="headlineSmall" color={colors.onBackground} header>
           Netto está bloqueado
         </Text>
         <Text color={colors.onSurfaceVariant} style={{ textAlign: 'center' }}>

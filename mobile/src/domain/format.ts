@@ -75,3 +75,19 @@ export function parseRateInput(text: string): number | null {
   const value = Number(text.replace(/\./g, '').replace(',', '.'));
   return Number.isFinite(value) && value > 0 && text.trim() !== '' ? value : null;
 }
+
+const SPOKEN_CURRENCY: Record<string, string> = { 'Gs.': 'guaraníes', 'US$': 'dólares', $: 'pesos' };
+const MONEY_IN_TEXT = /([+-]?)(Gs\.|US\$|\$) ?(\d[\d.]*(?:,\d+)?)/g;
+
+/**
+ * Cómo tiene que leer un monto el lector de pantalla: "Gs. 350.000" se lee "G S 350.000" y
+ * "-$ 1.200" pierde el signo. Devuelve "350.000 guaraníes", "menos 1.200 pesos".
+ * Devuelve null si el texto no tiene montos, para no cambiar nada.
+ */
+export function spokenMoneyText(text: string): string | null {
+  if (!text.match(MONEY_IN_TEXT)) return null;
+  return text.replace(MONEY_IN_TEXT, (_, sign: string, symbol: string, number: string) => {
+    const signWord = sign === '-' ? 'menos ' : sign === '+' ? 'más ' : '';
+    return `${signWord}${number} ${SPOKEN_CURRENCY[symbol]}`;
+  });
+}

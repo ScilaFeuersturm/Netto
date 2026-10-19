@@ -2,7 +2,7 @@
 # Correr las tres partes en orden: ~/.maestro/bin/maestro test .maestro/
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
-appId: com.example.netto
+appId: io.github.scilafeuersturm.netto
 ---
 - launchApp:
     clearState: true
@@ -91,7 +91,7 @@ appId: com.example.netto
 - extendedWaitUntil:
     visible: "Te queda este mes"
     timeout: 15000
-- assertVisible: "Gs. 5.000.000"
+- assertVisible: "Gs\\. 5\\.000\\.000|5\\.000\\.000 guaraníes"
 - assertVisible: "Todavía no cargaste ningún pago.*"
 
 # ---- Nueva factura ----
@@ -113,13 +113,13 @@ appId: com.example.netto
 - extendedWaitUntil:
     visible: "Luz ANDE.*"
     timeout: 10000
-- assertVisible: ".*Gs. 350.000.*"
+- assertVisible: ".*(Gs\\. 350\\.000|350\\.000 guaraníes).*"
 
 # ---- Pagar: pasa al historial y, al ser mensual, se genera la próxima cuota ----
 - scrollUntilVisible:
-    element: "Pagar ahora"
+    element: "Pagar ahora|Marcar Luz ANDE como pagada"
     centerElement: true
-- tapOn: "Pagar ahora"
+- tapOn: "Pagar ahora|Marcar Luz ANDE como pagada"
 - scrollUntilVisible:
     element: "Actividad reciente"
-- assertVisible: "-Gs. 350.000"
+- assertVisible: "-Gs\\. 350\\.000|menos 350\\.000 guaraníes"

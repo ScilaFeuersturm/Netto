@@ -1,6 +1,6 @@
 // Port de CurrencyTest.kt de la app Android.
 import { CurrencyConverter, type ExchangeRates } from '@/domain/currency';
-import { formatMoney, parseAmount, sanitizeAmountInput, toAmountInput } from '@/domain/format';
+import { formatMoney, parseAmount, sanitizeAmountInput, spokenMoneyText, toAmountInput } from '@/domain/format';
 
 const rates: ExchangeRates = { unitsPerUsd: { PYG: 7500, ARS: 1500 }, updatedAt: null, isManual: false };
 
@@ -54,4 +54,17 @@ test('el texto del monto ida y vuelta', () => {
   expect(toAmountInput(150_050, 'ARS')).toBe('1500,5');
   expect(toAmountInput(350_000, 'PYG')).toBe('350000');
   expect(toAmountInput(1_200, 'USD')).toBe('12');
+});
+
+describe('spokenMoneyText', () => {
+  it('lee los montos con el nombre de la moneda y el signo en palabras', () => {
+    expect(spokenMoneyText('Gs. 350.000')).toBe('350.000 guaraníes');
+    expect(spokenMoneyText('-$ 1.200,50')).toBe('menos 1.200,50 pesos');
+    expect(spokenMoneyText('+US$ 12')).toBe('más 12 dólares');
+    expect(spokenMoneyText('Meta: Gs. 1.000.000 de Gs. 5.000.000')).toBe('Meta: 1.000.000 guaraníes de 5.000.000 guaraníes');
+  });
+
+  it('no toca textos sin montos', () => {
+    expect(spokenMoneyText('Vence en 7 días')).toBeNull();
+  });
 });

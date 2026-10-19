@@ -1,16 +1,20 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import type { ComponentProps, ReactNode } from 'react';
+import { useEffect, type ComponentProps, type ReactNode } from 'react';
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Pressable,
   Text as RNText,
+  useWindowDimensions,
   View,
   type StyleProp,
   type TextProps as RNTextProps,
   type ViewStyle,
 } from 'react-native';
 
-import { Hero, Radius, textStyle, useTheme, type FontWeight, type TypographyVariant } from './theme';
+import { spokenMoneyText } from '@/domain/format';
+
+import { Hero, maxFontScale, Radius, textStyle, useTheme, type FontWeight, type TypographyVariant } from './theme';
 
 export type IconName = ComponentProps<typeof MaterialIcons>['name'];
 
@@ -33,11 +37,28 @@ type TextProps = RNTextProps & {
   variant?: TypographyVariant;
   weight?: FontWeight;
   color?: string;
+  /** Título de pantalla o sección: el lector de pantalla permite saltar de título en título. */
+  header?: boolean;
 };
 
-export function Text({ variant = 'bodyMedium', weight, color, style, ...props }: TextProps) {
+export function Text({ variant = 'bodyMedium', weight, color, style, header, ...props }: TextProps) {
   const { colors } = useTheme();
-  return <RNText {...props} style={[textStyle(variant, weight), { color: color ?? colors.onSurface }, style]} />;
+  const { fontScale } = useWindowDimensions();
+  // React Native agranda lineHeight con el texto del sistema sin respetar maxFontSizeMultiplier,
+  // y quedan renglones altísimos. Con el texto agrandado se usa el interlineado propio de la fuente.
+  const scaled = fontScale > 1 ? { lineHeight: undefined } : null;
+  // Los montos se leen con el nombre de la moneda ("350.000 guaraníes" en vez de "G S 350.000").
+  const spoken =
+    props.accessibilityLabel == null && typeof props.children === 'string' ? spokenMoneyText(props.children) : null;
+  return (
+    <RNText
+      accessibilityRole={header ? 'header' : undefined}
+      accessibilityLabel={spoken ?? undefined}
+      maxFontSizeMultiplier={maxFontScale(variant)}
+      {...props}
+      style={[textStyle(variant, weight), { color: color ?? colors.onSurface }, style, scaled]}
+    />
+  );
 }
 
 export const ScreenPadding = 16;
@@ -88,9 +109,14 @@ export function HeroCard({ children }: { children: ReactNode }) {
 }
 
 /** Dato secundario del talón, debajo del troquel (línea punteada). */
-export function HeroTile({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function HeroTile({
+  children,
+  style,
+  ...a11y
+}: { children: ReactNode; style?: StyleProp<ViewStyle>; accessible?: boolean; accessibilityLabel?: string }) {
   return (
     <View
+      {...a11y}
       style={[
         { borderTopWidth: 1, borderStyle: 'dashed', borderColor: Hero.perforation, paddingTop: 12, gap: 2 },
         style,
@@ -104,7 +130,11 @@ export function HeroTile({ children, style }: { children: ReactNode; style?: Sty
 /** Monto grande del talón: símbolo chico a la izquierda y número grande. */
 export function HeroAmount({ prefix, amount }: { prefix: string; amount: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+    <View
+      accessible
+      accessibilityLabel={spokenMoneyText(`${prefix} ${amount}`) ?? `${prefix} ${amount}`}
+      style={{ flexDirection: 'row', alignItems: 'flex-end' }}
+    >
       <Text variant="titleMedium" color={Hero.onColorMuted} style={{ marginRight: 6, marginBottom: 9 }}>
         {prefix}
       </Text>
@@ -122,7 +152,8 @@ export function HeroAmount({ prefix, amount }: { prefix: string; amount: string 
 export function Stamp({ text, detail, color }: { text: string; detail?: string; color: string }) {
   return (
     <View
-      accessibilityLabel={detail ? `${text}, ${detail}` : text}
+      accessible
+      accessibilityLabel={detail ? `${text} el ${detail}` : text}
       style={{
         transform: [{ rotate: '-6deg' }],
         borderWidth: 2,
@@ -210,8 +241,8 @@ export function SectionHeader({
 }) {
   const { colors } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Text variant="titleLarge" color={colors.onBackground}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', rowGap: 4 }}>
+      <Text variant="titleLarge" color={colors.onBackground} header style={{ flexShrink: 1 }}>
         {title}
       </Text>
       {count != null && count > 0 && (
@@ -224,7 +255,7 @@ export function SectionHeader({
       )}
       <View style={{ flex: 1 }} />
       {actionText && (
-        <Pressable onPress={onAction} hitSlop={8} style={{ padding: 4 }}>
+        <Pressable onPress={onAction} accessibilityRole="button" hitSlop={12} style={{ padding: 4 }}>
           <Text variant="labelLarge" color={colors.primary}>
             {actionText}
           </Text>
@@ -241,17 +272,30 @@ export function ProgressBar({
   trackColor,
   height = 6,
   style,
+  label,
 }: {
   fraction: number;
   color: string;
   trackColor?: string;
   height?: number;
   style?: StyleProp<ViewStyle>;
+  /** Qué mide la barra. Sin `label` es decorativa (el dato ya está escrito al lado) y se oculta al lector. */
+  label?: string;
 }) {
   const { colors } = useTheme();
   const clamped = Math.min(1, Math.max(0, fraction));
+  const a11y = label
+    ? {
+        accessible: true,
+        accessibilityRole: 'progressbar' as const,
+        accessibilityLabel: label,
+        accessibilityValue: { min: 0, max: 100, now: Math.round(clamped * 100) },
+      }
+    : { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' as const };
   return (
-    <View style={[{ height, borderRadius: height, backgroundColor: trackColor ?? colors.surfaceVariant, overflow: 'hidden' }, style]}>
+    <View
+      {...a11y}
+      style={[{ height, borderRadius: height, backgroundColor: trackColor ?? colors.surfaceVariant, overflow: 'hidden' }, style]}>
       <View style={{ width: `${clamped * 100}%`, height, borderRadius: height, backgroundColor: color }} />
     </View>
   );
@@ -270,6 +314,8 @@ type ButtonProps = {
   loading?: boolean;
   compact?: boolean;
   style?: StyleProp<ViewStyle>;
+  /** Para el lector de pantalla, cuando el texto visible no alcanza ("Marcar pagada" ¿cuál?). */
+  accessibilityLabel?: string;
 };
 
 function BaseButton({
@@ -283,6 +329,7 @@ function BaseButton({
   container,
   content,
   border,
+  accessibilityLabel,
 }: ButtonProps & { container: string; content: string; border?: string }) {
   const { colors } = useTheme();
   const inactive = disabled || loading;
@@ -290,7 +337,8 @@ function BaseButton({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: !!inactive }}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       onPress={onPress}
       disabled={inactive}
       style={({ pressed }) => [
@@ -345,7 +393,12 @@ export function OutlinedButton(props: ButtonProps) {
 export function TextButton({ text, onPress }: { text: string; onPress: () => void }) {
   const { colors } = useTheme();
   return (
-    <Pressable onPress={onPress} style={{ alignItems: 'center', paddingVertical: 10 }} hitSlop={4}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 10, minHeight: 44 }}
+      hitSlop={4}
+    >
       <Text variant="labelLarge" color={colors.primary}>
         {text}
       </Text>
@@ -371,10 +424,16 @@ export function AlertBanner({
   const container = critical ? colors.errorContainer : colors.surfaceVariant;
   const content = critical ? colors.onErrorContainer : colors.onSurface;
   const iconTint = critical ? colors.error : colors.onSurface;
+  // Los errores aparecen después de tocar un botón: se anuncian para que no pasen desapercibidos.
+  useEffect(() => {
+    if (critical) AccessibilityInfo.announceForAccessibility(message);
+  }, [critical, message]);
   return (
     <Pressable
       disabled={!onPress}
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLiveRegion={critical ? 'assertive' : 'polite'}
       style={[{ flexDirection: 'row', alignItems: 'center', borderRadius: Radius.md, backgroundColor: container, paddingHorizontal: 14, paddingVertical: 12 }, style]}
     >
       <Icon name={icon} size={20} color={iconTint} />

@@ -35,11 +35,13 @@ appId: io.github.scilafeuersturm.netto
     visible: "Te queda este mes"
     timeout: 60000
 
-# ---- Perfil: ya figura Premium ----
+# ---- Perfil: ya figura Premium y se puede elegir la moneda ----
 - tapOn: "Perfil"
 - extendedWaitUntil:
     visible: "Tenés Netto Premium"
     timeout: 20000
+- scrollUntilVisible:
+    element: "Moneda de visualización"
 - tapOn: "Volver"
 
 # ---- Ahorro ----

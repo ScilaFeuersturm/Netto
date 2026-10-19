@@ -57,6 +57,8 @@ appId: io.github.scilafeuersturm.netto
     visible: "Configuremos tu cuenta.*"
     timeout: 60000
 - assertVisible: "¡Hola, Ana!"
+# El país define la moneda (en el plan gratis, la única).
+- tapOn: "Paraguay.*"
 - tapOn:
     id: "onboarding-income-name"
 - inputText: "Sueldo"

@@ -3,9 +3,11 @@ import { useState, type ComponentProps } from 'react';
 import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { usePremium } from '@/data/premium';
 import { setDisplayCurrency } from '@/data/repository';
 import { CURRENCY_CODES, Currencies, type CurrencyCode } from '@/domain/currency';
 import { NotificationPrimer } from '@/features/NotificationPrimer';
+import { goToPremium } from '@/features/Premium';
 import { headerState, type HeaderState } from '@/features/selectors';
 import { useDerived } from '@/state/AppDataProvider';
 import { AlertBanner, Divider, Icon, Text } from '@/ui/primitives';
@@ -103,12 +105,18 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
+  const { premium } = usePremium();
   return (
     <>
       <Pressable
-        onPress={() => setOpen(true)}
+        // Sin Premium hay una sola moneda: el botón la muestra y lleva a los planes.
+        onPress={() => (premium ? setOpen(true) : goToPremium())}
         accessibilityRole="button"
-        accessibilityLabel={`Moneda: ${Currencies[selected].label}. Cambiar moneda`}
+        accessibilityLabel={
+          premium
+            ? `Moneda: ${Currencies[selected].label}. Cambiar moneda`
+            : `Moneda: ${Currencies[selected].label}. Otras monedas con Premium`
+        }
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -122,7 +130,7 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
         <Text variant="labelLarge" style={{ marginHorizontal: 6 }} maxFontSizeMultiplier={1.3}>
           {selected}
         </Text>
-        <Icon name="keyboard-arrow-down" size={16} />
+        <Icon name={premium ? 'keyboard-arrow-down' : 'lock-outline'} size={16} />
       </Pressable>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable style={{ flex: 1 }} onPress={() => setOpen(false)}>

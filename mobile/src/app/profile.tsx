@@ -24,6 +24,7 @@ import { useTheme } from '@/ui/theme';
 export default function ProfileScreen() {
   const { colors } = useTheme();
   const { user, converter } = useAppData();
+  const { premium } = usePremium();
   const [isRefreshing, setRefreshing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [editingRate, setEditingRate] = useState<CurrencyCode | null>(null);
@@ -62,17 +63,27 @@ export default function ProfileScreen() {
 
       <RemindersCard />
 
-      <Card>
-        <Text variant="titleMedium">Moneda de visualización</Text>
-        <Text variant="bodySmall" color={colors.onSurfaceVariant}>
-          Los totales de todas las pantallas se muestran convertidos a esta moneda.
-        </Text>
-        <CurrencySelector selected={converter.target} onSelect={(c) => void setDisplayCurrency(c)} style={{ marginTop: 8 }} />
-      </Card>
+      {premium ? (
+        <>
+          <Card>
+            <Text variant="titleMedium">Moneda de visualización</Text>
+            <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+              Los totales de todas las pantallas se muestran convertidos a esta moneda.
+            </Text>
+            <CurrencySelector selected={converter.target} onSelect={(c) => void setDisplayCurrency(c)} style={{ marginTop: 8 }} />
+          </Card>
 
-      <RatesCard isRefreshing={isRefreshing} message={message} onEdit={setEditingRate} onRefresh={onRefresh} />
+          <RatesCard isRefreshing={isRefreshing} message={message} onEdit={setEditingRate} onRefresh={onRefresh} />
 
-      <CalculatorCard />
+          <CalculatorCard />
+        </>
+      ) : (
+        <PremiumLocked
+          icon="currency-exchange"
+          title="Varias monedas"
+          description={`Cargá ingresos y facturas en pesos, guaraníes o dólares, con la cotización del día o la que vos elijas (por ejemplo, el dólar blue), y mirá los totales en la moneda que quieras. En el plan gratis usás ${Currencies[converter.target].label.toLowerCase()}.`}
+        />
+      )}
 
       <LegalCard />
 

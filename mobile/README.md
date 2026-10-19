@@ -119,7 +119,7 @@ src/
 
 | Plan gratis | Premium |
 | --- | --- |
-| Cargar facturas e ingresos a mano, marcar pagos, saldo del mes, respaldo en la nube | Todo lo gratis + escaneo, avisos de vencimiento, modelos de ahorro, reportes y atención prioritaria |
+| Cargar facturas e ingresos a mano en la moneda del país elegido al empezar, marcar pagos, saldo del mes, respaldo en la nube | Todo lo gratis + escaneo, avisos de vencimiento, modelos de ahorro, reportes, varias monedas con cotizaciones y atención prioritaria |
 
 Quién tiene Premium lo decide el servidor (tabla `entitlements`, que los usuarios solo pueden leer).
 La app la consulta en cada sincronización y guarda una copia para funcionar sin conexión.

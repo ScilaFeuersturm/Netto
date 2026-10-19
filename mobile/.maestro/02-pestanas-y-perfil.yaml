@@ -67,8 +67,9 @@ appId: io.github.scilafeuersturm.netto
 - assertVisible: "Tu perfil"
 - assertVisible: ${EMAIL}
 - assertVisible: "Plan gratis"
+# Varias monedas es Premium: en el plan gratis se explica en lugar de mostrar el selector.
 - scrollUntilVisible:
-    element: "Moneda de visualización"
+    element: "Varias monedas"
 - scrollUntilVisible:
     element: "Cerrar sesión"
 - tapOn: "Cerrar sesión"

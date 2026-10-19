@@ -17,6 +17,15 @@ export const Currencies: Record<CurrencyCode, Currency> = {
   USD: { code: 'USD', symbol: 'US$', label: 'Dólares', decimals: 2 },
 };
 
+/**
+ * Países donde está Netto. En el plan gratis se usa solo la moneda del país elegido al empezar;
+ * las demás monedas (y las cotizaciones) son Premium.
+ */
+export const COUNTRIES = [
+  { code: 'AR', name: 'Argentina', currency: 'ARS' },
+  { code: 'PY', name: 'Paraguay', currency: 'PYG' },
+] as const satisfies readonly { code: string; name: string; currency: CurrencyCode }[];
+
 /** En el mismo orden que el enum original (es el orden de los selectores). */
 export const CURRENCY_CODES: CurrencyCode[] = ['PYG', 'ARS', 'USD'];
 

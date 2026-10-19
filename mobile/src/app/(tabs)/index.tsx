@@ -46,7 +46,8 @@ export default function DashboardScreen() {
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <QuickAction icon="document-scanner" title="Escanear" highlighted onPress={() => router.push('/scan')} />
           <QuickAction icon="add-circle-outline" title="Registrar" onPress={addObligation} />
-          <QuickAction icon="ios-share" title="Reporte" onPress={goToReports} />
+          {/* Los ingresos son del plan gratis: este es su acceso directo (Ahorro, que también lo tiene, es Premium). */}
+          <QuickAction icon="payments" title="Ingresos" onPress={() => router.push('/income')} />
         </View>
       </View>
 

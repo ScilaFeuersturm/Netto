@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Keyboard, Pressable, View } from 'react-native';
 
-import { Currencies, type CurrencyCode } from '@/domain/currency';
+import { COUNTRIES, Currencies, type CurrencyCode } from '@/domain/currency';
 import { parseAmount, sanitizeAmountInput } from '@/domain/format';
 import { BUDGET_MODELS, type BudgetModelType } from '@/domain/models';
 import { addIncome, updateBudgetPlan } from '@/data/repository';
 import { useAppData } from '@/state/AppDataProvider';
-import { CurrencySelector, TextField } from '@/ui/form';
+import { Chip, TextField } from '@/ui/form';
 import { PrimaryButton, Text } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { Radius, useTheme } from '@/ui/theme';
@@ -17,28 +17,27 @@ export default function OnboardingScreen() {
   const { user } = useAppData();
   const firstName = user?.name.trim().split(' ')[0] ?? '';
 
-  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode>('PYG');
+  // El país define la moneda local: en el plan gratis es la única; con Premium se suman las demás.
+  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode | null>(null);
   const [incomeName, setIncomeName] = useState('');
   const [incomeText, setIncomeText] = useState('');
-  const [incomeCurrency, setIncomeCurrency] = useState<CurrencyCode>('PYG');
+  const incomeCurrency: CurrencyCode = displayCurrency ?? 'PYG';
   const [selectedModel, setSelectedModel] = useState<BudgetModelType>('RULE_50_30_20');
   const [isSaving, setSaving] = useState(false);
 
   const incomeAmount = parseAmount(incomeCurrency, incomeText);
   const skipsIncome = incomeName.trim() === '' && incomeText.trim() === '';
   /** El ingreso es opcional, pero si se empieza a cargar tiene que estar completo. */
-  const isValid = !isSaving && (skipsIncome || (incomeName.trim() !== '' && (incomeAmount ?? 0) > 0));
+  const isValid =
+    !isSaving && displayCurrency != null && (skipsIncome || (incomeName.trim() !== '' && (incomeAmount ?? 0) > 0));
 
-  const onDisplayCurrencySelect = (currency: CurrencyCode) => {
-    // Mientras no se haya elegido otra, la moneda del ingreso acompaña a la principal.
-    const nextIncomeCurrency = incomeCurrency === displayCurrency ? currency : incomeCurrency;
+  const onCountrySelect = (currency: CurrencyCode) => {
     setDisplayCurrency(currency);
-    setIncomeCurrency(nextIncomeCurrency);
-    setIncomeText((text) => sanitizeAmountInput(nextIncomeCurrency, text));
+    setIncomeText((text) => sanitizeAmountInput(currency, text));
   };
 
   const finish = async () => {
-    if (!isValid) return;
+    if (!isValid || displayCurrency == null) return;
     Keyboard.dismiss();
     setSaving(true);
     if (incomeName.trim() !== '' && incomeAmount != null) {
@@ -63,23 +62,32 @@ export default function OnboardingScreen() {
           {firstName ? `¡Hola, ${firstName}!` : 'Bienvenido a Netto'}
         </Text>
         <Text color={colors.onSurfaceVariant} style={{ marginTop: 6 }}>
-          Configuremos tu cuenta en un minuto. Podés cambiar todo esto más adelante.
+          Configuremos tu cuenta en un minuto.
         </Text>
       </View>
 
       <View>
-        <Text variant="titleMedium">¿En qué moneda querés ver tus totales?</Text>
+        <Text variant="titleMedium">¿En qué país vivís?</Text>
         <Text variant="bodySmall" color={colors.onSurfaceVariant}>
-          Cada ingreso y factura guarda su propia moneda; los totales se convierten a esta.
+          Tus montos van a estar en la moneda de tu país. Con Premium podés sumar otras monedas.
         </Text>
-        <CurrencySelector selected={displayCurrency} onSelect={onDisplayCurrencySelect} style={{ marginTop: 8 }} />
+        <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+          {COUNTRIES.map((country) => (
+            <Chip
+              key={country.code}
+              label={`${country.name} (${Currencies[country.currency].symbol})`}
+              selected={displayCurrency === country.currency}
+              onPress={() => onCountrySelect(country.currency)}
+            />
+          ))}
+        </View>
       </View>
 
       <View style={{ gap: 8 }}>
         <View>
           <Text variant="titleMedium">Tu ingreso mensual (opcional)</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant}>
-            Si preferís, cargalo después desde Ahorro → Gestionar ingresos.
+            Si preferís, cargalo después desde Inicio → Ingresos.
           </Text>
         </View>
         <TextField label="Nombre (ej. Sueldo)" testID="onboarding-income-name" value={incomeName} onChangeText={setIncomeName} />
@@ -90,13 +98,6 @@ export default function OnboardingScreen() {
           onChangeText={(v) => setIncomeText(sanitizeAmountInput(incomeCurrency, v))}
           prefix={Currencies[incomeCurrency].symbol}
           keyboardType="decimal-pad"
-        />
-        <CurrencySelector
-          selected={incomeCurrency}
-          onSelect={(c) => {
-            setIncomeCurrency(c);
-            setIncomeText((text) => sanitizeAmountInput(c, text));
-          }}
         />
       </View>
 

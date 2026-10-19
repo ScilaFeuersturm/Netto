@@ -9,9 +9,11 @@ import { CurrencySelector, TextField } from '@/ui/form';
 import { Card, IconButton, PrimaryButton, Text } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
+import { usePremium } from '@/data/premium';
 
 export default function IncomeScreen() {
   const { colors } = useTheme();
+  const { premium } = usePremium();
   const { incomes, converter } = useAppData();
   const total = converter.sumOf(incomes);
 
@@ -84,10 +86,13 @@ export default function IncomeScreen() {
             prefix={Currencies[form.currency].symbol}
             keyboardType="decimal-pad"
           />
-          <CurrencySelector
-            selected={form.currency}
-            onSelect={(currency) => setForm((f) => ({ ...f, currency, amountText: sanitizeAmountInput(currency, f.amountText) }))}
-          />
+          {/* Varias monedas es Premium: en el plan gratis todo va en la moneda del país. */}
+          {premium && (
+            <CurrencySelector
+              selected={form.currency}
+              onSelect={(currency) => setForm((f) => ({ ...f, currency, amountText: sanitizeAmountInput(currency, f.amountText) }))}
+            />
+          )}
           <TextField
             label="Día de cobro (1-31)"
             value={form.dayOfMonth}

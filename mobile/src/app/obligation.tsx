@@ -14,6 +14,7 @@ import { Chip, ChipRow, CurrencySelector, DateButton, SwitchRow, TextField } fro
 import { IconButton, PrimaryButton, Text } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
+import { usePremium } from '@/data/premium';
 
 type FormState = {
   /** Vacío mientras es una factura nueva. */
@@ -35,6 +36,7 @@ type FormState = {
 
 export default function ObligationFormScreen() {
   const { colors } = useTheme();
+  const { premium } = usePremium();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const obligationId = id ?? '';
   const { plan } = useAppData();
@@ -163,10 +165,13 @@ export default function ObligationFormScreen() {
         prefix={Currencies[form.currency].symbol}
         keyboardType="decimal-pad"
       />
-      <CurrencySelector
-        selected={form.currency}
-        onSelect={(currency) => update({ currency, amountText: sanitizeAmountInput(currency, form.amountText) })}
-      />
+      {/* Varias monedas es Premium: en el plan gratis todo va en la moneda del país. */}
+      {premium && (
+        <CurrencySelector
+          selected={form.currency}
+          onSelect={(currency) => update({ currency, amountText: sanitizeAmountInput(currency, form.amountText) })}
+        />
+      )}
 
       <DateButton label={`Vencimiento: ${numericEs(form.dueDate)}`} value={form.dueDate} onChange={(dueDate) => update({ dueDate })} />
 

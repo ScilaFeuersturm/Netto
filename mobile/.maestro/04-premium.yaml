@@ -1,0 +1,74 @@
+# 4/5: la cuenta pasa a Premium (como si hubiera pagado) y se desbloquean Ahorro, Reportes y el escáner.
+# Requiere el email de la cuenta de prueba y el Supabase local andando.
+appId: io.github.scilafeuersturm.netto
+---
+- runScript:
+    file: scripts/dar-premium.js
+    env:
+      EMAIL: ${EMAIL}
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Netto está bloqueado|Te queda este mes|¿Te avisamos antes de que venzan tus facturas\\?"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Netto está bloqueado"
+    commands:
+      - tapOn:
+          id: "unlock-password"
+      - inputText: "secreto123"
+      - pressKey: Enter
+# Al abrir la app se sincroniza y se consulta el plan. Con Premium, la app explica los avisos y
+# recién después pide el permiso del sistema; el cartel tapa el inicio, así que se atiende primero.
+- extendedWaitUntil:
+    visible: "¿Te avisamos antes de que venzan tus facturas\\?"
+    timeout: 30000
+    optional: true
+- tapOn:
+    text: "Activar avisos"
+    optional: true
+- tapOn:
+    text: "Permitir|Allow"
+    optional: true
+- extendedWaitUntil:
+    visible: "Te queda este mes"
+    timeout: 60000
+
+# ---- Perfil: ya figura Premium ----
+- tapOn: "Perfil"
+- extendedWaitUntil:
+    visible: "Tenés Netto Premium"
+    timeout: 20000
+- tapOn: "Volver"
+
+# ---- Ahorro ----
+- tapOn:
+    id: "tab-budget"
+- assertVisible: "Estrategia de ahorro"
+- assertVisible: "Distribución de ingresos"
+- scrollUntilVisible:
+    element: "Regla 70/20/10"
+- scrollUntilVisible:
+    element: "Activar"
+- tapOn: "Activar"
+- scrollUntilVisible:
+    element: "Activo"
+
+# ---- Reportes ----
+- tapOn:
+    id: "tab-history"
+- assertVisible: "Ingresos menos pagos del mes"
+- assertVisible: "Distribución de gastos"
+- scrollUntilVisible:
+    element: "Historial de pagos"
+- assertVisible: "Luz ANDE.*"
+
+# ---- Escáner (solo abrir y volver a carga manual) ----
+- tapOn:
+    id: "tab-index"
+- tapOn: "Escanear"
+- assertVisible: "Escanear factura"
+- tapOn: "Cargar los datos manualmente"
+- assertVisible: "Nuevo pago"
+- tapOn: "Volver"

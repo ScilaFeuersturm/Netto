@@ -16,8 +16,12 @@ Requiere Docker. Desde la raíz del repo:
 
 ```bash
 npx supabase start          # levanta Postgres, Auth y la API en http://127.0.0.1:54321
-node --test supabase/tests/backend.test.mjs   # seguridad por fila, sincronización, borrado de cuenta
+node --test supabase/tests/backend.test.mjs   # seguridad por fila, sincronización, Premium, borrado de cuenta
+node supabase/scripts/cuentas-de-prueba.mjs   # crea free@netto.test y premium@netto.test (contraseña NettoPrueba1)
 ```
+
+Para pasar una cuenta local a Premium o volverla al plan gratis:
+`node supabase/scripts/cuentas-de-prueba.mjs --premium <email>` (o `--gratis <email>`).
 
 La app toma la URL y la clave pública de `mobile/.env.local` (ver `.env.example`).
 
@@ -39,7 +43,8 @@ npx expo run:android
 Después de la primera compilación, alcanza con `npx expo start` para seguir desarrollando.
 Para compilar en la nube sin Xcode/Android Studio: `npx eas-cli@latest build --profile development`.
 
-Pruebas de punta a punta (Maestro, con la app corriendo y el backend levantado):
+Pruebas de punta a punta (Maestro, con la app corriendo y el backend levantado). Son cinco partes que
+se corren en orden: registro, plan gratis, volver a entrar, Premium y editar el perfil:
 
 ```bash
 ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
@@ -67,6 +72,7 @@ src/
   sync/           Sincronización con Supabase (subir pendientes, bajar cambios, "gana el último").
   features/       Cálculos de cada pantalla como funciones puras (lo que hacían los ViewModels).
   state/          AppDataProvider: carga los datos del usuario y se refresca ante cada cambio.
+                  Premium: `data/premium.ts` (estado) y `features/Premium.tsx` (bloqueo y beneficios).
   services/       Recordatorios con notificaciones locales.
   ocr/            Lectura de texto de facturas y extracción de monto/fecha.
   ui/             Tema (colores, tipografía) y componentes compartidos.
@@ -95,3 +101,14 @@ src/
 - **Cuentas en la nube:** las cuentas viven en Supabase y los datos se sincronizan entre dispositivos.
   Cerrar sesión borra los datos del teléfono (vuelven al entrar de nuevo).
 - **Bloqueo por inactividad:** después de 5 minutos sin uso se pide Face ID/huella o la contraseña.
+
+## Plan gratis y Premium
+
+| Plan gratis | Premium |
+| --- | --- |
+| Cargar facturas e ingresos a mano, marcar pagos, saldo del mes, respaldo en la nube | Todo lo gratis + escaneo, avisos de vencimiento, modelos de ahorro, reportes y atención prioritaria |
+
+Quién tiene Premium lo decide el servidor (tabla `entitlements`, que los usuarios solo pueden leer).
+La app la consulta en cada sincronización y guarda una copia para funcionar sin conexión.
+Las compras (RevenueCat) todavía no están conectadas: la pantalla de planes muestra los precios
+(2,99 USD por mes, 19,99 USD por año, 7 días de prueba) con el botón desactivado.

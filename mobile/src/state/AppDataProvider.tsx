@@ -4,6 +4,7 @@ import { AppState as RNAppState } from 'react-native';
 import { CurrencyConverter, EMPTY_RATES, type ExchangeRates } from '@/domain/currency';
 import { defaultBudgetPlan } from '@/domain/models';
 import { openDatabase, subscribeToDataChanges } from '@/data/db';
+import { usePremium } from '@/data/premium';
 import { readRates, refreshRatesIfStale } from '@/data/rates';
 import { getBudgetPlan, getIncomes, getObligations, getPaymentHistory, getUser } from '@/data/repository';
 import { currentUserId } from '@/data/session';
@@ -131,11 +132,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     };
   }, [retryCount, retryInitialSync]);
 
-  // Recordatorios: se reprograman cuando cambian las facturas o los días de aviso.
+  // Recordatorios (Premium): se reprograman cuando cambian las facturas, los días de aviso o el plan.
   const { state, obligations, plan } = data;
+  const { premium } = usePremium();
   const preparedNotifications = useRef(false);
   useEffect(() => {
-    if (state === 'logged_out') {
+    if (state === 'logged_out' || (state === 'ready' && !premium)) {
       void clearReminders();
       return;
     }
@@ -148,7 +150,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       }
       await syncReminders(obligations, plan.reminderDaysBefore);
     })();
-  }, [state, obligations, plan.reminderDaysBefore]);
+  }, [state, obligations, plan.reminderDaysBefore, premium]);
 
   return <AppDataContext.Provider value={data}>{children}</AppDataContext.Provider>;
 }

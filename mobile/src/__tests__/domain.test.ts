@@ -129,6 +129,17 @@ describe('cálculos de pantallas', () => {
       [2, 'Luz está vencido'],
     ]);
   });
+
+  test('por defecto, el primer aviso llega 5 días antes', () => {
+    const days = defaultBudgetPlan().reminderDaysBefore;
+    expect(days).toBe(5);
+    const reminders = remindersFor([obligation({ dueDate: TODAY + 10 })], days, () => '', TODAY);
+    expect(reminders.map((r) => [r.date - TODAY, r.title])).toEqual([
+      [5, 'Luz vence pronto'],
+      [10, 'Luz vence hoy'],
+      [11, 'Luz está vencido'],
+    ]);
+  });
 });
 
 describe('OCR de facturas', () => {

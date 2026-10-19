@@ -1,4 +1,4 @@
-# 2/3: pestañas, escáner, perfil y cierre de sesión (usa los datos que deja la parte 1).
+# 2/5: pestañas en el plan gratis, perfil y cierre de sesión (usa los datos que deja la parte 1).
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
 appId: io.github.scilafeuersturm.netto
@@ -41,34 +41,24 @@ appId: io.github.scilafeuersturm.netto
 - assertVisible: "Luz ANDE.*"
 - assertVisible: ".*Pagada.*"
 
-# ---- Ahorro ----
+# ---- Plan gratis: Ahorro, Reportes y el escáner son Premium y muestran qué incluyen ----
 - tapOn:
     id: "tab-budget"
-- assertVisible: "Estrategia de ahorro"
-- assertVisible: "Distribución de Ingresos"
-- scrollUntilVisible:
-    element: "Regla 70/20/10"
-- scrollUntilVisible:
-    element: "Activar"
-- tapOn: "Activar"
-- scrollUntilVisible:
-    element: "Activo"
-
-# ---- Reportes ----
+- assertVisible: "Modelos de ahorro"
+- assertVisible: "Incluido en Premium"
 - tapOn:
     id: "tab-history"
-- assertVisible: "Ingresos menos pagos del mes"
-- assertVisible: "Distribución de Gastos"
-- scrollUntilVisible:
-    element: "Historial de pagos"
-- assertVisible: "Luz ANDE.*"
-
-# ---- Escáner (solo abrir y volver a carga manual) ----
+- assertVisible: "Reportes"
+- assertVisible: "Incluido en Premium"
+- tapOn: "Ver Premium"
+- assertVisible: "Netto Premium"
+- assertVisible: ".*19,99 USD por año.*"
+- tapOn: "Volver"
 - tapOn:
     id: "tab-index"
 - tapOn: "Escanear"
-- assertVisible: "Escanear factura"
-- tapOn: "Cargar los datos manualmente"
+- assertVisible: "Escanear facturas"
+- tapOn: "Cargar a mano"
 - assertVisible: "Nuevo pago"
 - tapOn: "Volver"
 
@@ -76,7 +66,9 @@ appId: io.github.scilafeuersturm.netto
 - tapOn: "Perfil"
 - assertVisible: "Tu perfil"
 - assertVisible: ${EMAIL}
-- assertVisible: "Moneda de visualización"
+- assertVisible: "Plan gratis"
+- scrollUntilVisible:
+    element: "Moneda de visualización"
 - scrollUntilVisible:
     element: "Cerrar sesión"
 - tapOn: "Cerrar sesión"

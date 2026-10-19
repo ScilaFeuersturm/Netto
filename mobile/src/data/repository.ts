@@ -138,6 +138,16 @@ export async function getUser(userId: string): Promise<User | null> {
   return row ? { id: row.user_id, name: row.name, email: row.email } : null;
 }
 
+/** Cambia el nombre visible; se sincroniza con los demás dispositivos como cualquier otro dato. */
+export async function updateProfileName(name: string): Promise<void> {
+  const userId = requireUserId();
+  await getDb().runAsync(
+    'UPDATE profile SET name = ?, updated_at = ?, dirty = 1 WHERE user_id = ?',
+    name.trim(), Date.now(), userId,
+  );
+  afterLocalWrite();
+}
+
 // ---- Plan de presupuesto / preferencias por usuario ----
 
 export async function getBudgetPlan(userId: string = requireUserId()): Promise<BudgetPlan | null> {
@@ -181,6 +191,10 @@ export function selectBudgetModel(
 
 export function setDisplayCurrency(currency: CurrencyCode): Promise<void> {
   return updateBudgetPlan((plan) => ({ ...plan, displayCurrency: currency }));
+}
+
+export function setReminderDaysBefore(days: number): Promise<void> {
+  return updateBudgetPlan((plan) => ({ ...plan, reminderDaysBefore: days }));
 }
 
 // ---- Ingresos ----

@@ -5,3 +5,5 @@ executionOrder:
     - 01-registro-y-pago
     - 02-pestanas-y-perfil
     - 03-volver-a-entrar
+    - 04-premium
+    - 05-editar-perfil

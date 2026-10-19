@@ -5,12 +5,30 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { scanInvoice, setPendingScan } from '@/ocr/scanInvoice';
 import { Icon, OutlinedButton, PrimaryButton, Text } from '@/ui/primitives';
-import { ScreenHeader } from '@/ui/Screen';
+import { ScreenHeader, ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
+import { usePremium } from '@/data/premium';
+import { PremiumLocked } from '@/features/Premium';
 
 const READ_ERROR = 'No pudimos leer la factura automáticamente. Probá con más luz o cargá los datos a mano.';
 
-export default function ScanInvoiceScreen() {
+/** Escanear es Premium; en el plan gratis se explica y se ofrece cargar la factura a mano. */
+export default function ScanInvoiceScreenGate() {
+  const { premium } = usePremium();
+  if (premium) return <ScanInvoiceScreen />;
+  return (
+    <ScreenScroll title="Escanear factura">
+      <PremiumLocked
+        icon="document-scanner"
+        title="Escanear facturas"
+        description="Sacale una foto a la factura o elegí una imagen: Netto lee el monto y el vencimiento por vos. En el plan gratis podés cargarla a mano."
+      />
+      <OutlinedButton text="Cargar a mano" icon="edit" onPress={() => router.replace('/obligation')} />
+    </ScreenScroll>
+  );
+}
+
+function ScanInvoiceScreen() {
   const { colors } = useTheme();
   const [isProcessing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);

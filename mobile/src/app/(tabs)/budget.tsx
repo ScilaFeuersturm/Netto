@@ -14,6 +14,7 @@ import {
   AlertBanner, Card, Dot, HeroAmount, HeroCard, HeroTile, Icon, IconBox, PrimaryButton, ProgressBar, ScreenPadding, Tag, Text,
 } from '@/ui/primitives';
 import { Hero, useTheme } from '@/ui/theme';
+import { PremiumScreen } from '@/features/Premium';
 
 const MODEL_ICONS: Record<BudgetModelType, string> = {
   RULE_50_30_20: 'pie-chart',
@@ -22,7 +23,19 @@ const MODEL_ICONS: Record<BudgetModelType, string> = {
   CUSTOM: 'tune',
 };
 
-export default function BudgetScreen() {
+export default function BudgetScreenGate() {
+  return (
+    <PremiumScreen
+      icon="savings"
+      title="Modelos de ahorro"
+      description="Elegí cómo repartir tu ingreso entre necesidades, deseos y ahorro (50/30/20, 70/20/10 o a tu medida) y seguí mes a mes cuánto estás ahorrando."
+    >
+      <BudgetScreen />
+    </PremiumScreen>
+  );
+}
+
+function BudgetScreen() {
   const data = useAppData();
   const { plan } = data;
   const currency = data.converter.target;

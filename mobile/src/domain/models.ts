@@ -202,6 +202,10 @@ export type BudgetPlan = {
   onboardingCompleted: boolean;
 };
 
+/** Con cuántos días de anticipación llega el primer aviso de una factura (se cambia en el perfil). */
+export const DEFAULT_REMINDER_DAYS = 5;
+export const REMINDER_DAY_OPTIONS = [1, 2, 3, 5, 7, 10] as const;
+
 export function defaultBudgetPlan(userId = ''): BudgetPlan {
   const model = budgetModel('RULE_50_30_20');
   return {
@@ -210,7 +214,7 @@ export function defaultBudgetPlan(userId = ''): BudgetPlan {
     necesidadesPercent: model.necesidadesPercent,
     deseosPercent: model.deseosPercent,
     ahorroPercent: model.ahorroPercent,
-    reminderDaysBefore: 3,
+    reminderDaysBefore: DEFAULT_REMINDER_DAYS,
     displayCurrency: 'PYG',
     onboardingCompleted: false,
   };

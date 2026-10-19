@@ -7,6 +7,7 @@ import { pendingChanges } from '@/sync/engine';
 
 import { getDb, notifyDataChanged, openDatabase, USER_TABLES } from './db';
 import { hashPassword, verifyPassword } from './passwordHasher';
+import { clearPremium } from './premium';
 import { deleteSecureItem, getSecureItem, setSecureItem } from './secureStorage';
 import { clearSession, currentUserId, startSession } from './session';
 import { supabase } from './supabase';
@@ -33,6 +34,8 @@ function messageFor(error: AuthError | Error): string {
   if (code === 'invalid_credentials') return 'Email o contraseña incorrectos.';
   if (code === 'email_not_confirmed') return 'Todavía no confirmaste tu email. Revisá tu casilla (y la carpeta de spam).';
   if (code === 'user_already_exists' || code === 'email_exists') return 'Ya existe una cuenta con ese email.';
+  if (code === 'same_password') return 'La contraseña nueva tiene que ser distinta de la actual.';
+  if (code === 'email_address_invalid') return 'Ese email no es válido.';
   if (code === 'weak_password') return 'La contraseña es muy débil: usá al menos 8 caracteres, con letras y números.';
   if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit') {
     return 'Hiciste muchos intentos seguidos. Esperá unos minutos y probá de nuevo.';
@@ -111,7 +114,9 @@ export async function logout({ force = false }: { force?: boolean } = {}): Promi
 
 async function signOutLocally(): Promise<void> {
   signingOut = true;
+  const userId = currentUserId();
   try {
+    if (userId) await clearPremium(userId);
     await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     await wipeLocalUserData();
   } finally {
@@ -170,6 +175,36 @@ export async function updatePassword(password: string): Promise<AuthResult> {
   }
 }
 
+/**
+ * Cambiar la contraseña desde el perfil: primero se confirma la actual (contra el verificador del
+ * teléfono, así funciona aunque la sesión sea vieja) y recién después se guarda la nueva.
+ */
+export async function changePassword(current: string, next: string): Promise<AuthResult> {
+  if (!(await verifyCurrentUserPassword(current))) return { ok: false, message: 'La contraseña actual no es correcta.' };
+  return updatePassword(next);
+}
+
+/**
+ * Pide cambiar el email. Supabase manda un enlace a la dirección actual y a la nueva; el cambio vale
+ * en cuanto se abre uno de los dos (aunque esté configurado para pedir ambos). Por eso antes se pide la
+ * contraseña actual: si no, quien tenga el teléfono desbloqueado podría pasar la cuenta a su email.
+ */
+export async function requestEmailChange(newEmail: string, currentPassword: string): Promise<AuthResult> {
+  if (!(await verifyCurrentUserPassword(currentPassword))) {
+    return { ok: false, message: 'La contraseña actual no es correcta.' };
+  }
+  try {
+    const { error } = await supabase.auth.updateUser(
+      { email: newEmail.trim().toLowerCase() },
+      { emailRedirectTo: authRedirectUrl() },
+    );
+    if (error) return { ok: false, message: messageFor(error) };
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, message: messageFor(error as Error) };
+  }
+}
+
 /** Borra la cuenta y todos sus datos en el servidor (función delete-account) y en el teléfono. */
 export async function deleteAccount(): Promise<AuthResult> {
   try {
@@ -186,6 +221,14 @@ export async function deleteAccount(): Promise<AuthResult> {
  * Si el servidor invalida la sesión (por ejemplo, la cuenta se borró desde otro dispositivo o se
  * cambió la contraseña), se cierra la sesión local también.
  */
-supabase.auth.onAuthStateChange((event) => {
+supabase.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_OUT' && !signingOut && currentUserId()) void signOutLocally();
+  // Un cambio de email confirmado llega como USER_UPDATED: el perfil del teléfono se pone al día.
+  const userId = currentUserId();
+  if (event === 'USER_UPDATED' && userId && session?.user.id === userId && session.user.email) {
+    void getDb()
+      .runAsync('UPDATE profile SET email = ? WHERE user_id = ?', session.user.email, userId)
+      .then(() => notifyDataChanged())
+      .catch(() => {});
+  }
 });

@@ -1,4 +1,5 @@
 import { notifyDataChanged } from '@/data/db';
+import { refreshPremium } from '@/data/premium';
 import { currentUserId } from '@/data/session';
 import { isSupabaseConfigured } from '@/data/supabase';
 
@@ -63,6 +64,8 @@ export function syncNow(): Promise<SyncResult | null> {
       const result = await runSync(userId);
       setStatus({ syncing: false, offline: false, lastError: null, lastSyncedAt: Date.now() });
       if (result.pulled > 0) notifyDataChanged();
+      // Junto con los datos se revisa el plan (Premium o gratis), por si cambió en el servidor.
+      await refreshPremium().catch(() => {});
       return result;
     } catch (error) {
       const offline = error instanceof SyncError && error.offline;

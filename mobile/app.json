@@ -44,6 +44,10 @@
         "com.oppo.launcher.permission.WRITE_SETTINGS",
         "me.everything.badger.permission.BADGE_COUNT_READ",
         "me.everything.badger.permission.BADGE_COUNT_WRITE"
+      ],
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ]
     },
     "web": {
@@ -112,6 +116,13 @@
           "faceIDPermission": "Netto usa Face ID para desbloquear la app y proteger tus datos financieros."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7f75fc62-ca7d-4f3f-95ef-071bb964469a"
+      }
+    },
+    "owner": "scilafeuersturm"
   }
 }

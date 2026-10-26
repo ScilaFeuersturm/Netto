@@ -106,6 +106,13 @@ const MIGRATIONS: string[] = [
     PRIMARY KEY (user_id, table_name)
   );
   `,
+  // Plan familiar: con qué grupo está compartido cada dato (null = privado). Las filas compartidas por
+  // otras personas del grupo también se guardan acá, con el user_id de quien las cargó.
+  `
+  ALTER TABLE incomes ADD COLUMN household_id TEXT;
+  ALTER TABLE obligations ADD COLUMN household_id TEXT;
+  ALTER TABLE payment_history ADD COLUMN household_id TEXT;
+  `,
 ];
 
 let database: SQLite.SQLiteDatabase | null = null;

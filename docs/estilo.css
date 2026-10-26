@@ -1,20 +1,20 @@
-/* Páginas legales de Netto: misma paleta "Boleta" que la app. */
+/* Páginas legales de Inariko: misma paleta que la app (verde azulado y cobre del logo). */
 :root {
-  --papel: #EEF1F5;
+  --papel: #F2F5F4;
   --hoja: #FFFFFF;
-  --tinta: #1A2233;
-  --tinta-suave: #56607A;
-  --birome: #2340A0;
-  --regla: #D9DEE7;
+  --tinta: #10262A;
+  --tinta-suave: #4E6266;
+  --birome: #0D5761;
+  --regla: #D5DFDF;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --papel: #10151F;
-    --hoja: #1A212D;
-    --tinta: #ECEEF2;
-    --tinta-suave: #A7AFBF;
-    --birome: #9DB2F5;
-    --regla: #2F3847;
+    --papel: #0A191C;
+    --hoja: #112529;
+    --tinta: #E5EEEE;
+    --tinta-suave: #A2B5B7;
+    --birome: #7FC6CB;
+    --regla: #22393D;
   }
 }
 * { box-sizing: border-box; }

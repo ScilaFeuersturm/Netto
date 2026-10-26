@@ -7,6 +7,7 @@ import { pendingChanges } from '@/sync/engine';
 
 import { getDb, notifyDataChanged, openDatabase, USER_TABLES } from './db';
 import { hashPassword, verifyPassword } from './passwordHasher';
+import { clearHousehold } from './household';
 import { clearPremium } from './premium';
 import { deleteSecureItem, getSecureItem, setSecureItem } from './secureStorage';
 import { clearSession, currentUserId, startSession } from './session';
@@ -116,7 +117,7 @@ async function signOutLocally(): Promise<void> {
   signingOut = true;
   const userId = currentUserId();
   try {
-    if (userId) await clearPremium(userId);
+    if (userId) await Promise.all([clearPremium(userId), clearHousehold(userId)]);
     await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     await wipeLocalUserData();
   } finally {

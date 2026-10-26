@@ -6,6 +6,8 @@ import { formatMoney, spokenMoneyText } from '@/domain/format';
 import { CATEGORIES, dueLabel, urgencyFraction, type Obligation, type ObligationStatus } from '@/domain/models';
 
 import { Card, Icon, IconBox, PrimaryButton, ProgressBar, Stamp, Tag, Text, TonalButton } from './primitives';
+import { SharedTag } from '@/features/Household';
+
 import { statusPalette, useTheme } from './theme';
 
 /** Chip de vencimiento con el color del estado: "Vence en 2 días", "Vence mañana", "Pagada". */
@@ -51,6 +53,7 @@ export function ObligationCard({
   const spokenLabel = [
     obligation.name,
     detailText,
+    obligation.householdId ? 'De la casa' : null,
     spokenMoneyText(amountText) ?? amountText,
     converted != null && converter ? `aproximadamente ${spokenMoneyText(formatMoney(converted, converter.target))}` : null,
     isPaid ? null : dueLabel(obligation.dueDate, status, today()),
@@ -78,6 +81,9 @@ export function ObligationCard({
           <Text variant="bodySmall" color={colors.onSurfaceVariant} numberOfLines={2}>
             {detailText}
           </Text>
+          <View style={{ flexDirection: 'row', marginTop: 4 }}>
+            <SharedTag ownerId={obligation.userId} householdId={obligation.householdId} />
+          </View>
         </View>
         <View style={stacked ? { width: '100%', alignItems: 'flex-start', gap: 6, marginTop: 10 } : { alignItems: 'flex-end', gap: 6 }}>
           <Text variant="amount">

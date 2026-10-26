@@ -10,15 +10,25 @@ import { Card, IconButton, PrimaryButton, Text } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
 import { usePremium } from '@/data/premium';
+import { useHousehold } from '@/data/household';
+import { currentUserId } from '@/data/session';
+import { SharedTag, ShareWithHousehold } from '@/features/Household';
 
 export default function IncomeScreen() {
   const { colors } = useTheme();
   const { premium } = usePremium();
   const { incomes, converter } = useAppData();
+  const household = useHousehold();
   const total = converter.sumOf(incomes);
 
   // El formulario arranca en la moneda de visualización del usuario.
-  const emptyForm = () => ({ name: '', amountText: '', currency: converter.target as CurrencyCode, dayOfMonth: '1' });
+  const emptyForm = () => ({
+    name: '',
+    amountText: '',
+    currency: converter.target as CurrencyCode,
+    dayOfMonth: '1',
+    shared: false,
+  });
   const [form, setForm] = useState(emptyForm);
   const amount = parseAmount(form.currency, form.amountText);
   const isValid = form.name.trim() !== '' && (amount ?? 0) > 0;
@@ -32,6 +42,7 @@ export default function IncomeScreen() {
       amount,
       currency: form.currency,
       dayOfMonth: Number.isInteger(day) && day > 0 ? Math.min(31, day) : 1,
+      householdId: form.shared && household ? household.id : null,
     });
     setForm(emptyForm());
   };
@@ -56,6 +67,9 @@ export default function IncomeScreen() {
               <Text variant="bodySmall" color={colors.onSurfaceVariant}>
                 Día {income.dayOfMonth} de cada mes
               </Text>
+              <View style={{ flexDirection: 'row', marginTop: 4 }}>
+                <SharedTag ownerId={income.userId} householdId={income.householdId} />
+              </View>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text weight="bold" variant="bodyLarge">
@@ -67,7 +81,15 @@ export default function IncomeScreen() {
                 </Text>
               )}
             </View>
-            <IconButton icon="delete" label="Eliminar" color={colors.error} onPress={() => void deleteIncome(income.id)} />
+            {/* Solo quien cargó el ingreso lo puede borrar, aunque esté compartido. */}
+            {income.userId === currentUserId() && (
+              <IconButton
+                icon="delete"
+                label={`Eliminar ${income.name}`}
+                color={colors.error}
+                onPress={() => void deleteIncome(income.id)}
+              />
+            )}
           </View>
         );
       })}
@@ -99,6 +121,7 @@ export default function IncomeScreen() {
             onChangeText={(v) => setForm((f) => ({ ...f, dayOfMonth: v.replace(/\D/g, '').slice(0, 2) }))}
             keyboardType="number-pad"
           />
+          <ShareWithHousehold value={form.shared} onChange={(shared) => setForm((f) => ({ ...f, shared }))} testID="income-shared" />
           <PrimaryButton text="Agregar" onPress={add} disabled={!isValid} />
         </View>
       </Card>

@@ -1,5 +1,5 @@
 // Port de CurrencyTest.kt de la app Android.
-import { CurrencyConverter, type ExchangeRates } from '@/domain/currency';
+import { CurrencyConverter, guessLocalCurrency, type ExchangeRates } from '@/domain/currency';
 import { formatMoney, parseAmount, sanitizeAmountInput, spokenMoneyText, toAmountInput } from '@/domain/format';
 
 const rates: ExchangeRates = { unitsPerUsd: { PYG: 7500, ARS: 1500 }, updatedAt: null, isManual: false };
@@ -66,5 +66,15 @@ describe('spokenMoneyText', () => {
 
   it('no toca textos sin montos', () => {
     expect(spokenMoneyText('Vence en 7 días')).toBeNull();
+  });
+});
+
+describe('guessLocalCurrency', () => {
+  it('deduce la moneda por la zona horaria del teléfono', () => {
+    expect(guessLocalCurrency('America/Asuncion')).toBe('PYG');
+    expect(guessLocalCurrency('America/Argentina/Buenos_Aires')).toBe('ARS');
+    expect(guessLocalCurrency('America/Argentina/Cordoba')).toBe('ARS');
+    expect(guessLocalCurrency('Europe/Madrid')).toBeNull();
+    expect(guessLocalCurrency('')).toBeNull();
   });
 });

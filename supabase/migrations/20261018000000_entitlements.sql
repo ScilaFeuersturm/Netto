@@ -1,4 +1,4 @@
--- Qué usuarios tienen Netto Premium y hasta cuándo.
+-- Qué usuarios tienen Inariko Premium y hasta cuándo.
 --
 -- La escribe solo el servidor: la integración con RevenueCat (un webhook con la clave secreta) o, para
 -- cuentas de prueba y casos de soporte, alguien desde el panel de Supabase. Los usuarios solo pueden

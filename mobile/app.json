@@ -1,21 +1,21 @@
 {
   "expo": {
-    "name": "Netto",
-    "slug": "netto",
-    "scheme": "netto",
+    "name": "Inariko",
+    "slug": "inariko",
+    "scheme": "inariko",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#EEF1F5",
+    "backgroundColor": "#F2F5F4",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "io.github.scilafeuersturm.netto"
+      "bundleIdentifier": "io.github.scilafeuersturm.inariko"
     },
     "android": {
-      "package": "io.github.scilafeuersturm.netto",
+      "package": "io.github.scilafeuersturm.inariko",
       "adaptiveIcon": {
-        "backgroundColor": "#1E3A8A",
+        "backgroundColor": "#0B3A41",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -72,9 +72,9 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 140,
-          "backgroundColor": "#EEF1F5",
+          "backgroundColor": "#F2F5F4",
           "dark": {
-            "backgroundColor": "#10151F"
+            "backgroundColor": "#0A191C"
           }
         }
       ],
@@ -82,14 +82,14 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#2340A0"
+          "color": "#0D5761"
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Netto necesita acceder a tus fotos para leer facturas.",
-          "cameraPermission": "Netto necesita la cámara para sacarle una foto a tus facturas.",
+          "photosPermission": "Inariko necesita acceder a tus fotos para leer facturas.",
+          "cameraPermission": "Inariko necesita la cámara para sacarle una foto a tus facturas.",
           "microphonePermission": false
         }
       ],
@@ -98,7 +98,7 @@
         "expo-secure-store",
         {
           "configureAndroidBackup": false,
-          "faceIDPermission": "Netto usa Face ID para desbloquear la app y proteger tus datos financieros."
+          "faceIDPermission": "Inariko usa Face ID para desbloquear la app y proteger tus datos financieros."
         }
       ],
       [
@@ -113,15 +113,12 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Netto usa Face ID para desbloquear la app y proteger tus datos financieros."
+          "faceIDPermission": "Inariko usa Face ID para desbloquear la app y proteger tus datos financieros."
         }
       ]
     ],
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "7f75fc62-ca7d-4f3f-95ef-071bb964469a"
-      }
+      "router": {}
     },
     "owner": "scilafeuersturm"
   }

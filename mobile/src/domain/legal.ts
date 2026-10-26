@@ -5,7 +5,7 @@
  */
 const BASE_URL = 'https://scilafeuersturm.github.io/Netto';
 
-export const LEGAL_VERSION = 1;
+export const LEGAL_VERSION = 2;
 
 export const LegalLinks = {
   privacy: `${BASE_URL}/privacidad.html`,

@@ -1,7 +1,16 @@
 import { getDb } from '@/data/db';
 import { supabase } from '@/data/supabase';
 
-import { fromRemote, parseServerTimestamp, shouldApplyRemote, SYNC_TABLES, toRemote, type Row, type SyncTable } from './tables';
+import {
+  fromRemote,
+  parseServerTimestamp,
+  SHARED_TABLES,
+  shouldApplyRemote,
+  SYNC_TABLES,
+  toRemote,
+  type Row,
+  type SyncTable,
+} from './tables';
 
 const PAGE_SIZE = 500;
 /**
@@ -27,6 +36,8 @@ function asSyncError(error: { message?: string; code?: string } | null, context:
   return new SyncError(`${context}: ${message}`, offline);
 }
 
+const isShared = (table: SyncTable) => SHARED_TABLES.includes(table.local);
+
 /** Sube los cambios pendientes y baja los del servidor, tabla por tabla. */
 export async function runSync(userId: string): Promise<SyncResult> {
   let pushed = 0;
@@ -37,6 +48,9 @@ export async function runSync(userId: string): Promise<SyncResult> {
   for (const table of SYNC_TABLES) {
     pulled += await pull(table, userId);
   }
+  for (const table of SYNC_TABLES) {
+    if (isShared(table)) pulled += await dropUnreachableRows(table, userId);
+  }
   return { pushed, pulled };
 }
 
@@ -44,15 +58,33 @@ async function push(table: SyncTable, userId: string): Promise<number> {
   const db = getDb();
   let total = 0;
   for (;;) {
+    // En las tablas compartidas también hay filas de otras personas del grupo (editadas acá, por
+    // ejemplo una factura de la casa marcada como pagada).
     const rows = await db.getAllAsync<Row>(
-      `SELECT * FROM ${table.local} WHERE user_id = ? AND dirty = 1 LIMIT ${PAGE_SIZE}`,
-      userId,
+      `SELECT * FROM ${table.local} WHERE dirty = 1 ${isShared(table) ? '' : 'AND user_id = ?'} LIMIT ${PAGE_SIZE}`,
+      ...(isShared(table) ? [] : [userId]),
     );
     if (rows.length === 0) return total;
-    const { error } = await supabase.from(table.remote).upsert(rows.map((row) => toRemote(table, row)), {
-      onConflict: table.primaryKey,
-    });
-    if (error) throw asSyncError(error, `No se pudo subir ${table.remote}`);
+    const own = rows.filter((row) => row.user_id === userId);
+    const others = rows.filter((row) => row.user_id !== userId);
+    if (own.length > 0) {
+      const { error } = await supabase.from(table.remote).upsert(own.map((row) => toRemote(table, row)), {
+        onConflict: table.primaryKey,
+      });
+      if (error) throw asSyncError(error, `No se pudo subir ${table.remote}`);
+    }
+    // Las de otra persona se actualizan (no "upsert"): el servidor no deja crear filas a nombre de otro.
+    for (const row of others) {
+      const id = row[table.primaryKey] as string;
+      const { data, error } = await supabase
+        .from(table.remote)
+        .update(toRemote(table, row))
+        .eq(table.primaryKey, id)
+        .select(table.primaryKey);
+      if (error) throw asSyncError(error, `No se pudo subir ${table.remote}`);
+      // Sin filas afectadas: ya no está compartida con este grupo. Se descarta la copia local.
+      if ((data ?? []).length === 0) await db.runAsync(`DELETE FROM ${table.local} WHERE ${table.primaryKey} = ?`, id);
+    }
     // Solo se marca como subido si no cambió de nuevo mientras se subía.
     for (const row of rows) {
       await db.runAsync(
@@ -76,12 +108,9 @@ async function pull(table: SyncTable, userId: string): Promise<number> {
   let cursor = state?.cursor ?? null;
   let total = 0;
   for (;;) {
-    let query = supabase
-      .from(table.remote)
-      .select('*')
-      .eq('user_id', userId)
-      .order('server_updated_at', { ascending: true })
-      .limit(PAGE_SIZE);
+    // En las tablas compartidas se baja todo lo que el servidor deja ver (lo propio y lo del grupo).
+    let query = supabase.from(table.remote).select('*').order('server_updated_at', { ascending: true }).limit(PAGE_SIZE);
+    if (!isShared(table)) query = query.eq('user_id', userId);
     if (cursor) query = query.gte('server_updated_at', new Date(parseServerTimestamp(cursor) - CURSOR_OVERLAP_MS).toISOString());
     const { data, error } = await query;
     if (error) throw asSyncError(error, `No se pudo bajar ${table.remote}`);
@@ -127,6 +156,41 @@ async function pull(table: SyncTable, userId: string): Promise<number> {
   }
 }
 
+/**
+ * Copias locales de filas de otras personas que ya no se pueden ver (dejaron de compartirlas, o alguien
+ * salió del grupo). El servidor no avisa de lo que dejó de ser visible, así que se pregunta por ellas.
+ */
+async function dropUnreachableRows(table: SyncTable, userId: string): Promise<number> {
+  const db = getDb();
+  const local = await db.getAllAsync<{ id: string }>(
+    `SELECT ${table.primaryKey} AS id FROM ${table.local} WHERE user_id != ?`,
+    userId,
+  );
+  let dropped = 0;
+  for (let i = 0; i < local.length; i += 100) {
+    const ids = local.slice(i, i + 100).map((r) => r.id);
+    const { data, error } = await supabase.from(table.remote).select(table.primaryKey).in(table.primaryKey, ids);
+    if (error) throw asSyncError(error, `No se pudo revisar ${table.remote}`);
+    const visible = new Set(((data ?? []) as unknown as Row[]).map((r) => r[table.primaryKey] as string));
+    for (const id of ids) {
+      if (visible.has(id)) continue;
+      await db.runAsync(`DELETE FROM ${table.local} WHERE ${table.primaryKey} = ?`, id);
+      dropped++;
+    }
+  }
+  return dropped;
+}
+
+/**
+ * Vuelve a bajar desde cero las tablas compartidas. Hace falta al entrar a un grupo: lo que los demás
+ * compartieron antes tiene una marca de tiempo anterior al cursor de este teléfono.
+ */
+export async function resetSharedCursors(userId: string): Promise<void> {
+  for (const table of SHARED_TABLES) {
+    await getDb().runAsync('DELETE FROM sync_state WHERE user_id = ? AND table_name = ?', userId, table);
+  }
+}
+
 /** true si este dispositivo ya bajó alguna vez los datos de este usuario. */
 export async function hasSyncedOnce(userId: string): Promise<boolean> {
   const row = await getDb().getFirstAsync('SELECT 1 FROM sync_state WHERE user_id = ? LIMIT 1', userId);
@@ -138,8 +202,8 @@ export async function pendingChanges(userId: string): Promise<number> {
   let total = 0;
   for (const table of SYNC_TABLES) {
     const row = await getDb().getFirstAsync<{ n: number }>(
-      `SELECT count(*) AS n FROM ${table.local} WHERE user_id = ? AND dirty = 1`,
-      userId,
+      `SELECT count(*) AS n FROM ${table.local} WHERE dirty = 1 ${isShared(table) ? '' : 'AND user_id = ?'}`,
+      ...(isShared(table) ? [] : [userId]),
     );
     total += row?.n ?? 0;
   }

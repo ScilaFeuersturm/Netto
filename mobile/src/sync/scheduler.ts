@@ -1,4 +1,5 @@
 import { notifyDataChanged } from '@/data/db';
+import { refreshHousehold } from '@/data/household';
 import { refreshPremium } from '@/data/premium';
 import { currentUserId } from '@/data/session';
 import { isSupabaseConfigured } from '@/data/supabase';
@@ -61,6 +62,8 @@ export function syncNow(): Promise<SyncResult | null> {
     if (!userId || !isSupabaseConfigured) return null;
     setStatus({ syncing: true });
     try {
+      // Primero el grupo del plan familiar: si cambió, las tablas compartidas se bajan desde cero.
+      await refreshHousehold().catch(() => {});
       const result = await runSync(userId);
       setStatus({ syncing: false, offline: false, lastError: null, lastSyncedAt: Date.now() });
       if (result.pulled > 0) notifyDataChanged();

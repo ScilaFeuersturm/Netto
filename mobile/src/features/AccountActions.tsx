@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { deleteAccount, logout } from '@/data/auth';
+import { useHousehold } from '@/data/household';
 import { timestampEs } from '@/domain/dates';
 import { getSyncStatus, subscribeToSyncStatus, syncNow, type SyncStatus } from '@/sync/scheduler';
 import { Dialog } from '@/ui/form';
@@ -44,6 +45,7 @@ export function SyncCard() {
 /** Cerrar sesión (avisando si hay cambios sin subir) y borrar la cuenta. */
 export function AccountActions() {
   const { colors } = useTheme();
+  const household = useHousehold();
   const [pending, setPending] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,8 +103,13 @@ export function AccountActions() {
         onDismiss={() => setConfirmDelete(false)}
       >
         <Text color={colors.onSurfaceVariant}>
-          Se eliminan tu cuenta y todos tus datos (facturas, ingresos, historial y configuración) de este teléfono y de la
-          nube. No se puede deshacer.
+          {`Se eliminan tu cuenta y todos tus datos (facturas, ingresos, historial y configuración) de este teléfono y de la nube.${
+            household?.isOwner
+              ? ' Tu grupo del plan familiar se disuelve: los demás conservan lo suyo y pierden el Premium familiar.'
+              : household
+                ? ' Lo que compartiste con tu grupo deja de estar disponible para los demás.'
+                : ''
+          } No se puede deshacer.`}
         </Text>
       </Dialog>
     </View>

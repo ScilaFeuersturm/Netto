@@ -1,16 +1,16 @@
-# 5/5: avisos de vencimiento (Premium), nombre, email y contraseña desde el perfil.
+# 5/6: avisos de vencimiento (Premium), nombre, email y contraseña desde el perfil.
 # Requiere el email de la cuenta de prueba:
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
-appId: io.github.scilafeuersturm.netto
+appId: io.github.scilafeuersturm.inariko
 ---
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Netto está bloqueado|Te queda este mes|¿Te avisamos antes de que venzan tus facturas\\?"
+    visible: "Inariko está bloqueado|Te queda este mes|¿Te avisamos antes de que venzan tus facturas\\?"
     timeout: 60000
 - runFlow:
     when:
-      visible: "Netto está bloqueado"
+      visible: "Inariko está bloqueado"
     commands:
       - tapOn:
           id: "unlock-password"

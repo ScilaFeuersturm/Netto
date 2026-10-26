@@ -1,0 +1,93 @@
+# 6/6: plan familiar. Ana (con plan familiar) crea el grupo, genera un código y carga una factura
+# "de la casa"; Beto se suma con el código y la ve. Usa dos cuentas nuevas (no la de las partes 1 a 5).
+#   ~/.maestro/bin/maestro test -e OWNER=ana-$(date +%s)@example.com -e GUEST=beto-$(date +%s)@example.com .maestro/06-plan-familiar.yaml
+appId: io.github.scilafeuersturm.inariko
+---
+- runScript:
+    file: scripts/crear-familia.js
+    env:
+      OWNER: ${OWNER}
+      GUEST: ${GUEST}
+
+# ---- Ana entra y crea el grupo ----
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/entrar-y-configurar.yaml
+    env:
+      EMAIL: ${OWNER}
+- tapOn: "Perfil"
+- scrollUntilVisible:
+    element: "Crear mi grupo"
+    centerElement: true
+- tapOn: "Crear mi grupo"
+- extendedWaitUntil:
+    visible: "Invitar a alguien"
+    timeout: 20000
+- tapOn: "Invitar a alguien"
+- extendedWaitUntil:
+    visible:
+      id: "household-invite-code"
+    timeout: 20000
+- copyTextFrom:
+    id: "household-invite-code"
+- tapOn: "Volver"
+
+# ---- Ana carga una factura de la casa ----
+- tapOn: "Registrar"
+- tapOn:
+    id: "obligation-name"
+- inputText: "Alquiler casa"
+- tapOn:
+    id: "obligation-amount"
+- inputText: "2500000"
+- scroll
+- scrollUntilVisible:
+    element:
+      id: "obligation-shared"
+- tapOn:
+    id: "obligation-shared"
+- scrollUntilVisible:
+    element: "Guardar"
+- waitForAnimationToEnd
+- tapOn: "Guardar"
+- extendedWaitUntil:
+    visible: "Alquiler casa.*"
+    timeout: 10000
+# Esperar a que la factura se suba antes de cerrar sesión.
+- extendedWaitUntil:
+    visible: "Te queda este mes"
+    timeout: 5000
+- tapOn: "Perfil"
+- scrollUntilVisible:
+    element: "Cerrar sesión"
+- tapOn: "Cerrar sesión"
+- tapOn:
+    text: "Cerrar sesión igual"
+    optional: true
+
+# ---- Beto se suma con el código y ve la factura ----
+- runFlow:
+    file: subflows/entrar-y-configurar.yaml
+    env:
+      EMAIL: ${GUEST}
+- tapOn: "Perfil"
+- scrollUntilVisible:
+    element:
+      id: "household-join-code"
+    centerElement: true
+- tapOn:
+    id: "household-join-code"
+- inputText: ${maestro.copiedText}
+- pressKey: Enter
+- extendedWaitUntil:
+    visible: "Mi casa"
+    timeout: 20000
+- assertVisible: "Salir del grupo"
+- tapOn: "Volver"
+- tapOn:
+    id: "tab-obligations"
+- extendedWaitUntil:
+    visible: "Alquiler casa.*"
+    timeout: 30000
+- assertVisible: ".*De la casa.*"

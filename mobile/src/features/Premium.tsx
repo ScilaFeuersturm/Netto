@@ -8,11 +8,12 @@ import { useTheme } from '@/ui/theme';
 
 /** Lo que suma Premium, en el orden en que se muestra en la pantalla de planes. */
 export const PREMIUM_BENEFITS = [
-  { icon: 'document-scanner', title: 'Escanear facturas', text: 'Sacale una foto y Netto carga el monto y el vencimiento.' },
+  { icon: 'document-scanner', title: 'Escanear facturas', text: 'Sacale una foto y Inariko carga el monto y el vencimiento.' },
   { icon: 'notifications-active', title: 'Avisos de vencimiento', text: 'Te avisamos antes de que venza cada factura.' },
   { icon: 'savings', title: 'Modelos de ahorro', text: 'Repartí tu ingreso con 50/30/20, 70/20/10 u otro a tu medida.' },
   { icon: 'insights', title: 'Reportes', text: 'Cuánto entró, cuánto pagaste y en qué, mes a mes.' },
   { icon: 'currency-exchange', title: 'Varias monedas', text: 'Pesos, guaraníes y dólares, con la cotización que elijas.' },
+  { icon: 'group', title: 'Plan familiar', text: 'Compartí las cuentas de la casa con hasta 2 personas más.' },
   { icon: 'support-agent', title: 'Atención prioritaria', text: 'Tus consultas se responden primero.' },
 ] as const;
 
@@ -29,7 +30,7 @@ export function PremiumLocked({ icon, title, description }: { icon: string; titl
   return (
     <Card style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <IconBox icon={icon} container={colors.primaryContainer} tint={colors.onPrimaryContainer} />
+        <IconBox icon={icon} container={colors.primaryContainer} tint={colors.brand} />
         <View style={{ flex: 1 }}>
           <Text variant="titleMedium" header>
             {title}

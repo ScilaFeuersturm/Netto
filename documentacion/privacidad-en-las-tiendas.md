@@ -65,9 +65,18 @@ Si se agrega rastreo publicitario, hay que mostrar el aviso de App Tracking Tran
 
 Los datos que procesa Supabase no cuentan como "compartidos": Google excluye a los proveedores que procesan datos en nombre de la app. Las filas de anuncios siguen la [guía de Google para AdMob en Play](https://developers.google.com/admob/android/privacy/play-data-disclosure).
 
+## Plan familiar
+
+Lo que una persona comparte con su grupo lo ven otras personas porque ella lo eligió (con una invitación aceptada y marcando cada dato como "de la casa"). Para las tiendas no cuenta como "compartir con terceros":
+
+- **Apple:** no cambia App Privacy. No es rastreo ni se comparte con empresas.
+- **Google:** en Seguridad de los datos no se declara como "compartido"; Google excluye las transferencias que el usuario inicia hacia otras personas.
+
+La política de privacidad lo explica en la sección "Plan familiar" (versión 2).
+
 ## Otros formularios de Play Console
 
-- **Funciones financieras**: elegir "La app no ofrece ninguna de estas funciones financieras". Netto organiza gastos: no da préstamos, no mueve dinero y no ofrece inversiones.
+- **Funciones financieras**: elegir "La app no ofrece ninguna de estas funciones financieras". Inariko organiza gastos: no da préstamos, no mueve dinero y no ofrece inversiones.
 - **Anuncios**: "No" hasta integrar AdMob.
 - **Público objetivo**: mayores de 18.
-- **Acceso a la app**: Google pide una cuenta de prueba para revisar la app. Crear una que no sea de nadie real, como premium@netto.test, cuando exista el plan Premium.
+- **Acceso a la app**: Google pide una cuenta de prueba para revisar la app. Crear una que no sea de nadie real, como premium@inariko.test, cuando exista el plan Premium.

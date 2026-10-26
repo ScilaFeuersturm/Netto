@@ -1,4 +1,4 @@
-// Genera el ícono "talón" de Netto y sus variantes en assets/. Correr desde mobile/:
+// Genera el ícono "talón" de Inariko y sus variantes en assets/. Correr desde mobile/:
 //   node scripts/generar-iconos.mjs
 //
 // Dibuja las formas directamente (rectángulos, polígonos, cápsulas) con antialias por

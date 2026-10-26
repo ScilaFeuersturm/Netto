@@ -18,13 +18,32 @@ export const Currencies: Record<CurrencyCode, Currency> = {
 };
 
 /**
- * Países donde está Netto. En el plan gratis se usa solo la moneda del país elegido al empezar;
+ * Países donde está Inariko. En el plan gratis se usa solo la moneda del país elegido al empezar;
  * las demás monedas (y las cotizaciones) son Premium.
  */
 export const COUNTRIES = [
   { code: 'AR', name: 'Argentina', currency: 'ARS' },
   { code: 'PY', name: 'Paraguay', currency: 'PYG' },
 ] as const satisfies readonly { code: string; name: string; currency: CurrencyCode }[];
+
+/**
+ * La moneda del país del teléfono, deducida de su zona horaria (no hace falta ningún permiso).
+ * Devuelve null si no es Argentina ni Paraguay: ahí la persona elige.
+ */
+export function guessLocalCurrency(timeZone: string | undefined = currentTimeZone()): CurrencyCode | null {
+  if (!timeZone) return null;
+  if (timeZone === 'America/Asuncion') return 'PYG';
+  if (timeZone.startsWith('America/Argentina/') || timeZone === 'America/Buenos_Aires') return 'ARS';
+  return null;
+}
+
+function currentTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return undefined;
+  }
+}
 
 /** En el mismo orden que el enum original (es el orden de los selectores). */
 export const CURRENCY_CODES: CurrencyCode[] = ['PYG', 'ARS', 'USD'];

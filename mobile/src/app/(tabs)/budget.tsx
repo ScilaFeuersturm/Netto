@@ -82,7 +82,7 @@ function BudgetScreen() {
         <Card onPress={manageIncome}>
           <Text variant="titleSmall">Todavía no cargaste tu ingreso mensual.</Text>
           <Text variant="bodySmall" color={colors.onSurfaceVariant} style={{ marginTop: 4 }}>
-            Cargalo para que Netto pueda calcular cuánto asignar a cada modelo de ahorro.
+            Cargalo para que Inariko pueda calcular cuánto asignar a cada modelo de ahorro.
           </Text>
           <Text variant="labelLarge" color={colors.secondary} style={{ marginTop: 8 }}>
             Ir a Ingresos →

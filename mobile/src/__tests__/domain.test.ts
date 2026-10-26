@@ -22,6 +22,7 @@ function obligation(partial: Partial<Obligation>): Obligation {
     notes: null,
     createdFromOcr: false,
     createdAt: TODAY,
+    householdId: null,
     ...partial,
   };
 }
@@ -67,7 +68,7 @@ describe('estado de obligaciones', () => {
 });
 
 describe('cálculos de pantallas', () => {
-  const incomes = [{ id: 'o1', userId: 'u1', name: 'Sueldo', amount: 1_000_000, currency: 'PYG' as const, dayOfMonth: 1, isRecurring: true }];
+  const incomes = [{ id: 'o1', userId: 'u1', name: 'Sueldo', amount: 1_000_000, currency: 'PYG' as const, dayOfMonth: 1, isRecurring: true, householdId: null }];
 
   test('inicio: saldo disponible y vencidas', () => {
     const state = dashboardState(

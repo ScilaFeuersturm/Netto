@@ -135,7 +135,7 @@ export function HeroAmount({ prefix, amount }: { prefix: string; amount: string 
       accessibilityLabel={spokenMoneyText(`${prefix} ${amount}`) ?? `${prefix} ${amount}`}
       style={{ flexDirection: 'row', alignItems: 'flex-end' }}
     >
-      <Text variant="titleMedium" color={Hero.onColorMuted} style={{ marginRight: 6, marginBottom: 9 }}>
+      <Text variant="titleMedium" color={Hero.accent} style={{ marginRight: 6, marginBottom: 9 }}>
         {prefix}
       </Text>
       <Text variant="amountDisplay" color={Hero.onColor} numberOfLines={1} adjustsFontSizeToFit style={{ flexShrink: 1 }}>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Keyboard, Pressable, View } from 'react-native';
 
-import { COUNTRIES, Currencies, type CurrencyCode } from '@/domain/currency';
+import { COUNTRIES, Currencies, guessLocalCurrency, type CurrencyCode } from '@/domain/currency';
 import { parseAmount, sanitizeAmountInput } from '@/domain/format';
 import { BUDGET_MODELS, type BudgetModelType } from '@/domain/models';
 import { addIncome, updateBudgetPlan } from '@/data/repository';
@@ -18,7 +18,8 @@ export default function OnboardingScreen() {
   const firstName = user?.name.trim().split(' ')[0] ?? '';
 
   // El país define la moneda local: en el plan gratis es la única; con Premium se suman las demás.
-  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode | null>(null);
+  // Viene elegido según la zona horaria del teléfono; si no se puede deducir, lo elige la persona.
+  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode | null>(() => guessLocalCurrency());
   const [incomeName, setIncomeName] = useState('');
   const [incomeText, setIncomeText] = useState('');
   const incomeCurrency: CurrencyCode = displayCurrency ?? 'PYG';
@@ -30,6 +31,15 @@ export default function OnboardingScreen() {
   /** El ingreso es opcional, pero si se empieza a cargar tiene que estar completo. */
   const isValid =
     !isSaving && displayCurrency != null && (skipsIncome || (incomeName.trim() !== '' && (incomeAmount ?? 0) > 0));
+
+  const missingStep =
+    displayCurrency == null
+      ? 'Para empezar, elegí en qué país vivís (arriba de todo).'
+      : !skipsIncome && incomeName.trim() === ''
+        ? 'Completá el nombre del ingreso, o borrá el monto si preferís cargarlo después.'
+        : !skipsIncome && !((incomeAmount ?? 0) > 0)
+          ? 'Completá el monto del ingreso, o borrá el nombre si preferís cargarlo después.'
+          : null;
 
   const onCountrySelect = (currency: CurrencyCode) => {
     setDisplayCurrency(currency);
@@ -59,7 +69,7 @@ export default function OnboardingScreen() {
     <ScreenScroll safeTop contentStyle={{ paddingHorizontal: 24, paddingTop: 32, gap: 20 }}>
       <View>
         <Text variant="headlineMedium" color={colors.primary} header>
-          {firstName ? `¡Hola, ${firstName}!` : 'Bienvenido a Netto'}
+          {firstName ? `¡Hola, ${firstName}!` : 'Bienvenido a Inariko'}
         </Text>
         <Text color={colors.onSurfaceVariant} style={{ marginTop: 6 }}>
           Configuremos tu cuenta en un minuto.
@@ -135,6 +145,12 @@ export default function OnboardingScreen() {
         );
       })}
 
+      {/* Si el botón está desactivado, se dice por qué (si no, parece que la app no responde). */}
+      {!isSaving && missingStep && (
+        <Text variant="bodySmall" color={colors.onSurfaceVariant} accessibilityLiveRegion="polite" style={{ textAlign: 'center' }}>
+          {missingStep}
+        </Text>
+      )}
       <PrimaryButton text="Empezar" onPress={finish} disabled={!isValid} loading={isSaving} />
     </ScreenScroll>
   );

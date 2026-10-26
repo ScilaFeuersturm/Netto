@@ -157,11 +157,11 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "netto://"
+site_url = "inariko://"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["netto://**"]
+additional_redirect_urls = ["inariko://**"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -248,29 +248,29 @@ otp_expiry = 3600
 # Emails en español. Los mismos archivos se pegan a mano en el panel de la nube
 # (Authentication → Emails → Templates), o se suben con `supabase config push`.
 [auth.email.template.confirmation]
-subject = "Confirmá tu cuenta de Netto"
+subject = "Confirmá tu cuenta de Inariko"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "Restablecé tu contraseña de Netto"
+subject = "Restablecé tu contraseña de Inariko"
 content_path = "./supabase/templates/recovery.html"
 
 [auth.email.template.email_change]
-subject = "Confirmá el cambio de email en Netto"
+subject = "Confirmá el cambio de email en Inariko"
 content_path = "./supabase/templates/email_change.html"
 
 [auth.email.template.magic_link]
-subject = "Tu enlace para entrar a Netto"
+subject = "Tu enlace para entrar a Inariko"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.email.template.reauthentication]
-subject = "Tu código de verificación de Netto"
+subject = "Tu código de verificación de Inariko"
 content_path = "./supabase/templates/reauthentication.html"
 
 # Aviso de seguridad: si alguien cambia la contraseña, el dueño de la cuenta se entera.
 [auth.email.notification.password_changed]
 enabled = true
-subject = "Cambió la contraseña de tu cuenta de Netto"
+subject = "Cambió la contraseña de tu cuenta de Inariko"
 content_path = "./supabase/templates/password_changed_notification.html"
 
 [auth.sms]

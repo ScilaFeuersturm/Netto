@@ -17,7 +17,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
   return (
     <ScreenScroll safeTop contentStyle={{ paddingHorizontal: 24, paddingTop: 32 }}>
       <Text variant="headlineMedium" color={colors.primary} style={{ marginTop: 16 }}>
-        Netto
+        Inariko
       </Text>
       <View style={{ gap: 4, marginBottom: 8 }}>
         <Text variant="titleLarge" color={colors.onBackground} header>

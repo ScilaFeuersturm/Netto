@@ -10,7 +10,13 @@
     "backgroundColor": "#F2F5F4",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "io.github.scilafeuersturm.inariko"
+      "bundleIdentifier": "io.github.scilafeuersturm.inariko",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "io.github.scilafeuersturm.inariko",

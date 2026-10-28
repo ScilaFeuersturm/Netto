@@ -118,7 +118,10 @@
       ]
     ],
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "88a04740-b594-4273-9eb1-a562ff11f089"
+      }
     },
     "owner": "scilafeuersturm"
   }

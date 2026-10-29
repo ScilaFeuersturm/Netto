@@ -10,6 +10,7 @@ import { RATES_SOURCE_NAME, refreshRates, setManualRate } from '@/data/rates';
 import { setDisplayCurrency, setReminderDaysBefore } from '@/data/repository';
 import { REMINDER_DAY_OPTIONS } from '@/domain/models';
 import { usePremium } from '@/data/premium';
+import { ConsumerRightsButtons } from '@/features/ConsumerRights';
 import { FamilyCard } from '@/features/Household';
 import { goToPremium, PremiumLocked } from '@/features/Premium';
 import { AccountActions, SyncCard } from '@/features/AccountActions';
@@ -125,6 +126,8 @@ function LegalCard() {
         <TextButton text="Términos y condiciones" onPress={open(LegalLinks.terms)} />
         <Divider />
         <TextButton text="Escribir a soporte" onPress={open(`mailto:${SUPPORT_EMAIL}?subject=Inariko`)} />
+        <Divider />
+        <ConsumerRightsButtons />
       </View>
     </Card>
   );

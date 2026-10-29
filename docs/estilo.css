@@ -44,3 +44,13 @@ th { font-weight: 600; }
 .nota { color: var(--tinta-suave); font-size: 0.95rem; }
 nav { margin-top: 2.5em; padding-top: 1em; border-top: 1px dashed var(--regla); }
 nav a { margin-right: 1.2em; }
+.botones { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 1.5em; }
+.boton {
+  display: inline-block;
+  padding: 12px 18px;
+  border: 2px solid var(--birome);
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.boton:hover { background: var(--regla); }

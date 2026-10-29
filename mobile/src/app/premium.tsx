@@ -4,6 +4,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { usePremium } from '@/data/premium';
 import { fromLocalDate, numericEs } from '@/domain/dates';
 import { LegalLinks } from '@/domain/legal';
+import { ConsumerRightsButtons } from '@/features/ConsumerRights';
 import { PREMIUM_BENEFITS } from '@/features/Premium';
 import { HOUSEHOLD_MAX_MEMBERS } from '@/data/household';
 import { Chip } from '@/ui/form';
@@ -154,6 +155,7 @@ export default function PremiumPaywallScreen() {
           </View>
         </>
       )}
+      <ConsumerRightsButtons />
     </ScreenScroll>
   );
 }

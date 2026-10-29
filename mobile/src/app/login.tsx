@@ -4,6 +4,7 @@ import { Keyboard } from 'react-native';
 
 import { login } from '@/data/auth';
 import { AuthLayout, isValidEmail } from '@/features/auth';
+import { ConsumerRightsButtons } from '@/features/ConsumerRights';
 import { PasswordField, TextField } from '@/ui/form';
 import { AlertBanner, PrimaryButton, TextButton } from '@/ui/primitives';
 
@@ -58,6 +59,7 @@ export default function LoginScreen() {
       <PrimaryButton text={isLoading ? 'Ingresando…' : 'Ingresar'} onPress={submit} disabled={!canSubmit} loading={isLoading} />
       <TextButton text="¿Olvidaste tu contraseña?" onPress={() => router.push('/forgot-password')} />
       <TextButton text="¿No tenés cuenta? Registrate" onPress={() => router.push('/register')} />
+      <ConsumerRightsButtons />
     </AuthLayout>
   );
 }

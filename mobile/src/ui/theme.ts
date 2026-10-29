@@ -2,20 +2,23 @@ import { useColorScheme, type TextStyle } from 'react-native';
 
 import type { ObligationStatus } from '@/domain/models';
 
-// Paleta "Boleta": la de las facturas de papel. Tinta de birome azul sobre hoja blanca,
-// sello rojo para lo vencido, resaltador amarillo para lo que vence pronto y verde para lo pagado.
-// Todos los pares texto/fondo cumplen WCAG AA (4.5:1) y los bordes de campos 3:1, en ambos temas.
+// Paleta de Inariko, tomada del logo: verde azulado profundo y cobre. Se mantienen los colores
+// con significado (sello rojo para lo vencido, resaltador amarillo para lo que vence pronto, verde
+// para lo pagado). Todos los pares texto/fondo cumplen WCAG AA (4.5:1) y los bordes de campos 3:1,
+// en ambos temas.
 export const Palette = {
-  Ink: '#1A2233', // texto principal
-  InkMuted: '#56607A', // texto secundario
-  Birome: '#2340A0', // primario: botones, links, montos destacados
-  BiromeDeep: '#1E3A8A', // fondo del talón (hero)
-  BiromeWash: '#E3E8F7', // contenedor del primario
-  Paper: '#EEF1F5', // fondo de pantalla
+  Ink: '#10262A', // texto principal
+  InkMuted: '#4E6266', // texto secundario
+  Teal: '#0D5761', // primario: botones, links, montos destacados
+  TealDeep: '#0B3A41', // fondo del talón (hero), el mismo verde del logo
+  TealWash: '#D9ECEC', // contenedor del primario
+  Copper: '#8C4F33', // cobre de la marca, cuando es texto o ícono sobre claro
+  CopperLight: '#E5AE8C', // cobre sobre fondos oscuros (talón, modo oscuro)
+  Paper: '#F2F5F4', // fondo de pantalla
   Sheet: '#FFFFFF', // tarjetas
-  SheetSunk: '#E4E8EF', // superficie hundida (pistas de barras, chips apagados)
-  Rule: '#8A93A6', // bordes de campos (3:1 sobre blanco)
-  RuleFaint: '#D9DEE7', // divisores y contornos decorativos
+  SheetSunk: '#E3EAEA', // superficie hundida (pistas de barras, chips apagados)
+  Rule: '#82959A', // bordes de campos (3:1 sobre blanco)
+  RuleFaint: '#D5DFDF', // divisores y contornos decorativos
   Stamp: '#A8243A', // sello: vencido / error
   StampWash: '#F9E1E4',
   StampDark: '#8A1C2E',
@@ -24,31 +27,35 @@ export const Palette = {
   Paid: '#2F6B4F', // pagado
   PaidWash: '#DCEFE3',
   PaidDark: '#1E4D37',
-  NightPaper: '#10151F',
-  NightSheet: '#1A212D',
-  NightSheetHigh: '#242C3A',
-  NightRule: '#6E788B',
-  NightRuleFaint: '#2F3847',
-  NightText: '#ECEEF2',
-  NightTextMuted: '#A7AFBF',
-  NightBirome: '#9DB2F5',
+  NightPaper: '#0A191C',
+  NightSheet: '#112529',
+  NightSheetHigh: '#18323A',
+  NightRule: '#6A8286',
+  NightRuleFaint: '#22393D',
+  NightText: '#E5EEEE',
+  NightTextMuted: '#A2B5B7',
+  NightTeal: '#7FC6CB',
 };
 
-/** Talón destacado (saldo, total por pagar, etc): bloque de tinta azul con texto blanco. */
+/** Talón destacado (saldo, total por pagar, etc): bloque verde azulado con texto blanco. */
 export const Hero = {
-  fill: Palette.BiromeDeep,
-  fillDark: '#22356F',
+  fill: Palette.TealDeep,
+  fillDark: '#0F444C',
   onColor: '#FFFFFF',
-  onColorMuted: '#C7D2F0',
+  onColorMuted: '#BFD6D8',
   /** Línea punteada del troquel, que separa el monto de los datos de abajo. */
   perforation: 'rgba(255,255,255,0.35)',
   tile: 'rgba(255,255,255,0.10)',
-  /** Resaltador y verde aclarados para leerse sobre el azul. */
+  /** Resaltador y verde aclarados para leerse sobre el verde azulado. */
   highlight: Palette.Highlighter,
   positive: '#8FD3AE',
+  /** Cobre de la marca sobre el talón. */
+  accent: Palette.CopperLight,
 };
 
 export type ColorScheme = {
+  /** Cobre de la marca: acentos puntuales (Premium, detalles del talón). Siempre legible como texto. */
+  brand: string;
   primary: string;
   onPrimary: string;
   primaryContainer: string;
@@ -76,10 +83,11 @@ export type ColorScheme = {
 };
 
 export const LightColors: ColorScheme = {
-  primary: Palette.Birome,
+  brand: Palette.Copper,
+  primary: Palette.Teal,
   onPrimary: '#FFFFFF',
-  primaryContainer: Palette.BiromeWash,
-  onPrimaryContainer: Palette.BiromeDeep,
+  primaryContainer: Palette.TealWash,
+  onPrimaryContainer: Palette.TealDeep,
   secondary: Palette.Paid,
   onSecondary: '#FFFFFF',
   secondaryContainer: Palette.SheetSunk,
@@ -103,10 +111,11 @@ export const LightColors: ColorScheme = {
 };
 
 export const DarkColors: ColorScheme = {
-  primary: Palette.NightBirome,
+  brand: Palette.CopperLight,
+  primary: Palette.NightTeal,
   onPrimary: Palette.NightPaper,
-  primaryContainer: '#22356F',
-  onPrimaryContainer: '#DCE3FB',
+  primaryContainer: '#17474F',
+  onPrimaryContainer: '#D7EEEF',
   secondary: '#7FC4A0',
   onSecondary: Palette.NightPaper,
   secondaryContainer: Palette.NightSheetHigh,

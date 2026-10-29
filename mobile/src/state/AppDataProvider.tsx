@@ -72,9 +72,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const [user, plan, obligations, incomes, history] = await Promise.all([
         getUser(userId),
         getBudgetPlan(userId),
-        getObligations(userId),
-        getIncomes(userId),
-        getPaymentHistory(userId),
+        getObligations(),
+        getIncomes(),
+        getPaymentHistory(),
       ]);
       if (id !== loadId.current || cancelled) return;
       if (!user) {

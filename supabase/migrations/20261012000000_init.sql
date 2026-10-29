@@ -1,4 +1,4 @@
--- Esquema inicial de Netto.
+-- Esquema inicial de Inariko.
 --
 -- La app es local-first: cada teléfono tiene su base SQLite cifrada y sincroniza con estas tablas.
 -- Reglas comunes a las tablas sincronizadas:

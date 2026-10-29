@@ -15,6 +15,9 @@ import { IconButton, PrimaryButton, Text } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { useTheme } from '@/ui/theme';
 import { usePremium } from '@/data/premium';
+import { useHousehold } from '@/data/household';
+import { currentUserId } from '@/data/session';
+import { ShareWithHousehold } from '@/features/Household';
 
 type FormState = {
   /** Vacío mientras es una factura nueva. */
@@ -32,6 +35,9 @@ type FormState = {
   /** Se conservan al editar para no "despagar" una factura ya pagada. */
   isPaid: boolean;
   paidDate: number | null;
+  /** Plan familiar: si se comparte con el grupo, y quién la cargó (al editar). */
+  shared: boolean;
+  ownerId: string;
 };
 
 export default function ObligationFormScreen() {
@@ -40,6 +46,7 @@ export default function ObligationFormScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const obligationId = id ?? '';
   const { plan } = useAppData();
+  const household = useHousehold();
 
   const [form, setForm] = useState<FormState>(() => {
     // Una factura nueva arranca en la moneda de visualización del usuario.
@@ -57,6 +64,8 @@ export default function ObligationFormScreen() {
       isEditing: false,
       isPaid: false,
       paidDate: null,
+      shared: false,
+      ownerId: '',
     };
     if (obligationId) return base;
     const scan = peekPendingScan();
@@ -96,6 +105,8 @@ export default function ObligationFormScreen() {
         isEditing: true,
         isPaid: o.isPaid,
         paidDate: o.paidDate,
+        shared: o.householdId != null,
+        ownerId: o.userId,
       }));
     });
   }, [obligationId]);
@@ -120,9 +131,13 @@ export default function ObligationFormScreen() {
       isPaid: form.isPaid,
       paidDate: form.paidDate,
       createdFromOcr: form.scannedImageUri != null,
+      householdId: form.shared && household ? household.id : null,
     });
     router.back();
   };
+
+  // Una factura compartida que cargó otra persona se puede editar, pero solo quien la cargó la borra.
+  const canDelete = form.isEditing && (!form.ownerId || form.ownerId === currentUserId());
 
   const remove = async () => {
     if (!form.id) return;
@@ -134,7 +149,7 @@ export default function ObligationFormScreen() {
   return (
     <ScreenScroll
       title={form.isEditing ? 'Editar pago' : 'Nuevo pago'}
-      actions={form.isEditing ? <IconButton icon="delete" label="Eliminar" onPress={remove} color={colors.onBackground} /> : null}
+      actions={canDelete ? <IconButton icon="delete" label="Eliminar" onPress={remove} color={colors.onBackground} /> : null}
       contentStyle={{ paddingHorizontal: 20 }}
     >
       {form.scannedImageUri && (
@@ -192,6 +207,13 @@ export default function ObligationFormScreen() {
       </View>
 
       <SwitchRow label="Es un gasto recurrente mensual" value={form.isRecurring} onValueChange={(isRecurring) => update({ isRecurring })} />
+
+      <ShareWithHousehold
+        value={form.shared}
+        onChange={(shared) => update({ shared })}
+        ownerId={form.ownerId || undefined}
+        testID="obligation-shared"
+      />
 
       <TextField label="Notas (opcional)" value={form.notes} onChangeText={(notes) => update({ notes })} multiline />
 

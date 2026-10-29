@@ -39,11 +39,14 @@ test('una factura local se convierte al formato del servidor y vuelve igual', ()
     notes: null,
     created_from_ocr: 0,
     created_on: epochDayOf(2026, 10, 12),
+    // Compartida con el grupo del plan familiar: el id del grupo viaja tal cual.
+    household_id: '9a8b7c6d-3333-4e5f-8a9b-0c1d2e3f0003',
     updated_at: 1_791_000_000_000,
     deleted: 0,
     dirty: 1,
   };
   const remote = toRemote(obligations, local);
+  expect(remote.household_id).toBe(local.household_id);
   expect(remote).toMatchObject({ due_date: '2026-10-20', is_recurring: true, is_paid: false, created_on: '2026-10-12' });
   expect(remote).not.toHaveProperty('dirty');
 

@@ -1,6 +1,6 @@
-# 4/5: la cuenta pasa a Premium (como si hubiera pagado) y se desbloquean Ahorro, Reportes y el escáner.
+# 4/6: la cuenta pasa a Premium (como si hubiera pagado) y se desbloquean Ahorro, Reportes y el escáner.
 # Requiere el email de la cuenta de prueba y el Supabase local andando.
-appId: io.github.scilafeuersturm.netto
+appId: io.github.scilafeuersturm.inariko
 ---
 - runScript:
     file: scripts/dar-premium.js
@@ -9,11 +9,11 @@ appId: io.github.scilafeuersturm.netto
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Netto está bloqueado|Te queda este mes|¿Te avisamos antes de que venzan tus facturas\\?"
+    visible: "Inariko está bloqueado|Te queda este mes|¿Te avisamos antes de que venzan tus facturas\\?"
     timeout: 60000
 - runFlow:
     when:
-      visible: "Netto está bloqueado"
+      visible: "Inariko está bloqueado"
     commands:
       - tapOn:
           id: "unlock-password"
@@ -38,7 +38,7 @@ appId: io.github.scilafeuersturm.netto
 # ---- Perfil: ya figura Premium y se puede elegir la moneda ----
 - tapOn: "Perfil"
 - extendedWaitUntil:
-    visible: "Tenés Netto Premium"
+    visible: "Tenés Inariko Premium"
     timeout: 20000
 - scrollUntilVisible:
     element: "Moneda de visualización"

@@ -17,6 +17,12 @@ export type SyncTable = {
 
 const SYNC_COLUMNS = { updated_at: 'int', deleted: 'bool' } as const;
 
+/**
+ * Tablas cuyas filas se pueden compartir con el grupo del plan familiar: se bajan todas las que el
+ * servidor deja ver (las propias y las compartidas), no solo las del usuario.
+ */
+export const SHARED_TABLES = ['incomes', 'obligations', 'payment_history'];
+
 export const SYNC_TABLES: SyncTable[] = [
   {
     local: 'profile',
@@ -52,6 +58,7 @@ export const SYNC_TABLES: SyncTable[] = [
       currency: 'text',
       day_of_month: 'int',
       is_recurring: 'bool',
+      household_id: 'text',
       ...SYNC_COLUMNS,
     },
   },
@@ -74,6 +81,7 @@ export const SYNC_TABLES: SyncTable[] = [
       notes: 'text',
       created_from_ocr: 'bool',
       created_on: 'date',
+      household_id: 'text',
       ...SYNC_COLUMNS,
     },
   },
@@ -90,6 +98,7 @@ export const SYNC_TABLES: SyncTable[] = [
       amount: 'int',
       currency: 'text',
       paid_date: 'date',
+      household_id: 'text',
       ...SYNC_COLUMNS,
     },
   },

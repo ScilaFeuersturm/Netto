@@ -1,4 +1,4 @@
-# Netto
+# Inariko
 
 App de finanzas personales para Android e iOS: facturas y vencimientos, ingresos en varias monedas
 (PYG, ARS, USD), modelos de ahorro, reportes y escaneo de facturas con OCR.

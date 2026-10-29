@@ -1,4 +1,4 @@
-# Netto (Expo · Android + iOS)
+# Inariko (Expo · Android + iOS)
 
 App de finanzas personales: facturas y vencimientos, ingresos en varias monedas (PYG, ARS, USD),
 modelos de ahorro (50/30/20, etc.), reportes y escaneo de facturas con OCR.
@@ -17,7 +17,9 @@ Requiere Docker. Desde la raíz del repo:
 ```bash
 npx supabase start          # levanta Postgres, Auth y la API en http://127.0.0.1:54321
 node --test supabase/tests/backend.test.mjs   # seguridad por fila, sincronización, Premium, borrado de cuenta
-node supabase/scripts/cuentas-de-prueba.mjs   # crea free@netto.test y premium@netto.test (contraseña NettoPrueba1)
+node --test supabase/tests/plan-familiar.test.mjs   # grupos, invitaciones, qué se comparte y qué no
+node supabase/scripts/cuentas-de-prueba.mjs   # crea free@inariko.test y premium@inariko.test (contraseña InarikoPrueba1)
+node supabase/scripts/cuentas-de-prueba.mjs --parejas   # dos parejas con plan familiar, ya en su grupo
 ```
 
 Para pasar una cuenta local a Premium o volverla al plan gratis:
@@ -56,11 +58,13 @@ npx eas-cli@latest build --profile preview --platform all
 
 El ícono y sus variantes se generan con `node scripts/generar-iconos.mjs` (no hace falta instalar nada).
 
-Pruebas de punta a punta (Maestro, con la app corriendo y el backend levantado). Son cinco partes que
-se corren en orden: registro, plan gratis, volver a entrar, Premium y editar el perfil:
+Pruebas de punta a punta (Maestro, con la app corriendo y el backend levantado). Las partes 1 a 5 se
+corren en orden (registro, plan gratis, volver a entrar, Premium y editar el perfil); la 6 (plan
+familiar) usa dos cuentas propias:
 
 ```bash
-~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
+~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/0[1-5]*.yaml
+~/.maestro/bin/maestro test -e OWNER=ana-$(date +%s)@example.com -e GUEST=beto-$(date +%s)@example.com .maestro/06-plan-familiar.yaml
 ```
 
 Chequeos:
@@ -114,6 +118,17 @@ src/
 - **Cuentas en la nube:** las cuentas viven en Supabase y los datos se sincronizan entre dispositivos.
   Cerrar sesión borra los datos del teléfono (vuelven al entrar de nuevo).
 - **Bloqueo por inactividad:** después de 5 minutos sin uso se pide Face ID/huella o la contraseña.
+
+## Plan familiar
+
+Hasta 3 personas en un grupo comparten lo que cada una marca "de la casa" (facturas, ingresos y
+pagos); lo demás es privado. El grupo lo crea quien paga el plan familiar, los demás se suman con un
+código de un solo uso y tienen Premium mientras estén adentro. Las reglas viven en el servidor
+(`supabase/migrations/20261026000000_plan_familiar.sql`): permisos por fila, límite de 3, solo quien
+cargó un dato lo deja de compartir, y al salir lo compartido vuelve a ser privado. En la app:
+`data/household.ts` (estado y acciones) y `features/Household.tsx` (tarjeta del perfil, interruptor
+"Compartir con…" y etiqueta "De la casa"). La sincronización baja también lo compartido por otros y
+descarta lo que deja de estar visible.
 
 ## Plan gratis y Premium
 

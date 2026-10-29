@@ -4,33 +4,62 @@ import { Linking, Pressable, View } from 'react-native';
 import { usePremium } from '@/data/premium';
 import { fromLocalDate, numericEs } from '@/domain/dates';
 import { LegalLinks } from '@/domain/legal';
+import { ConsumerRightsButtons } from '@/features/ConsumerRights';
 import { PREMIUM_BENEFITS } from '@/features/Premium';
+import { HOUSEHOLD_MAX_MEMBERS } from '@/data/household';
+import { Chip } from '@/ui/form';
 import { AlertBanner, Card, Icon, IconBox, PrimaryButton, Tag, Text, TextButton } from '@/ui/primitives';
 import { ScreenScroll } from '@/ui/Screen';
 import { Radius, useTheme } from '@/ui/theme';
 
 /**
- * Planes de Netto Premium. Precios base en USD; cuando esté RevenueCat, cada tienda los muestra en la
+ * Planes de Inariko Premium. Precios base en USD; cuando esté RevenueCat, cada tienda los muestra en la
  * moneda del país y la compra se hace desde acá.
  */
-const PLANS = [
-  { id: 'annual', title: 'Anual', price: '19,99 USD por año', detail: 'Equivale a 1,67 USD por mes', badge: 'Ahorrás 44%' },
-  { id: 'monthly', title: 'Mensual', price: '2,99 USD por mes', detail: 'Cancelás cuando quieras', badge: null },
-] as const;
+const PLANS = {
+  individual: [
+    { id: 'annual', title: 'Anual', price: '19,99 USD por año', detail: 'Equivale a 1,67 USD por mes', badge: 'Ahorrás 44%' },
+    { id: 'monthly', title: 'Mensual', price: '2,99 USD por mes', detail: 'Cancelás cuando quieras', badge: null },
+  ],
+  family: [
+    {
+      id: 'family-annual',
+      title: 'Familiar anual',
+      price: '34,99 USD por año',
+      detail: `Hasta ${HOUSEHOLD_MAX_MEMBERS} personas. Equivale a 2,92 USD por mes`,
+      badge: 'Ahorrás 41%',
+    },
+    {
+      id: 'family-monthly',
+      title: 'Familiar mensual',
+      price: '4,99 USD por mes',
+      detail: `Hasta ${HOUSEHOLD_MAX_MEMBERS} personas. Cancelás cuando quieras`,
+      badge: null,
+    },
+  ],
+} as const;
 
-type PlanId = (typeof PLANS)[number]['id'];
+type Kind = keyof typeof PLANS;
+type PlanId = (typeof PLANS)[Kind][number]['id'];
 
 export default function PremiumPaywallScreen() {
   const { colors } = useTheme();
-  const { premium, until } = usePremium();
+  const { premium, until, plan: currentPlan } = usePremium();
+  const [kind, setKind] = useState<Kind>('individual');
   const [selected, setSelected] = useState<PlanId>('annual');
+  const plans = PLANS[kind];
+
+  const chooseKind = (next: Kind) => {
+    setKind(next);
+    setSelected(PLANS[next][0].id);
+  };
 
   return (
-    <ScreenScroll title="Netto Premium">
+    <ScreenScroll title="Inariko Premium">
       {premium && until != null ? (
         <AlertBanner
           icon="workspace-premium"
-          message={`Tenés Premium hasta el ${numericEs(fromLocalDate(new Date(until)))}. ¡Gracias por apoyar Netto!`}
+          message={`Tenés Premium${currentPlan === 'family' ? ' familiar' : ''} hasta el ${numericEs(fromLocalDate(new Date(until)))}. ¡Gracias por apoyar Inariko!`}
         />
       ) : (
         <Text variant="bodyLarge" color={colors.onSurfaceVariant}>
@@ -41,7 +70,7 @@ export default function PremiumPaywallScreen() {
       <Card style={{ gap: 14 }}>
         {PREMIUM_BENEFITS.map((benefit) => (
           <View key={benefit.title} accessible style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <IconBox icon={benefit.icon} container={colors.primaryContainer} tint={colors.onPrimaryContainer} size={40} />
+            <IconBox icon={benefit.icon} container={colors.primaryContainer} tint={colors.brand} size={40} />
             <View style={{ flex: 1 }}>
               <Text variant="titleSmall">{benefit.title}</Text>
               <Text variant="bodySmall" color={colors.onSurfaceVariant}>
@@ -54,8 +83,22 @@ export default function PremiumPaywallScreen() {
 
       {!premium && (
         <>
+          <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <Chip label="Para mí" selected={kind === 'individual'} onPress={() => chooseKind('individual')} />
+            <Chip
+              label={`Familiar (hasta ${HOUSEHOLD_MAX_MEMBERS})`}
+              selected={kind === 'family'}
+              onPress={() => chooseKind('family')}
+            />
+          </View>
+          {kind === 'family' && (
+            <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+              {`Pagás vos y hasta ${HOUSEHOLD_MAX_MEMBERS - 1} personas más tienen Premium. Comparten las facturas, ingresos y pagos que marquen como "de la casa"; lo demás sigue siendo privado de cada uno.`}
+            </Text>
+          )}
+
           <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
-            {PLANS.map((plan) => {
+            {plans.map((plan) => {
               const isSelected = plan.id === selected;
               return (
                 <Pressable
@@ -112,6 +155,7 @@ export default function PremiumPaywallScreen() {
           </View>
         </>
       )}
+      <ConsumerRightsButtons />
     </ScreenScroll>
   );
 }

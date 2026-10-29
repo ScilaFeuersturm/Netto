@@ -1,127 +1,153 @@
-// Genera el ícono "talón" de Netto y sus variantes en assets/. Correr desde mobile/:
+// Genera el ícono de Inariko (el zorro de hojas) y sus variantes en assets/. Correr desde mobile/:
 //   node scripts/generar-iconos.mjs
 //
-// Dibuja las formas directamente (rectángulos, polígonos, cápsulas) con antialias por
-// supermuestreo y las guarda con pngjs, que ya viene con Expo: no hace falta instalar nada.
-// Todas las medidas están en un lienzo de 1024 × 1024.
-import { createRequire } from 'node:module';
-import { writeFileSync } from 'node:fs';
+// El dibujo es SVG; lo pasa a PNG Google Chrome en modo headless (tiene que estar instalado en
+// /Applications o en CHROME) y pngjs, que ya viene con Expo, hace los retoques. No hace falta
+// instalar nada. Todas las medidas están en un lienzo de 1024 × 1024.
+import { createRequire } from "node:module";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const require = createRequire(import.meta.url);
-const { PNG } = require('pngjs');
+const { PNG } = require("pngjs");
 
-const BLUE = [0x1e, 0x3a, 0x8a];
-const WHITE = [0xff, 0xff, 0xff];
-const RULE = [0x8a, 0x93, 0xa6];
+const CHROME =
+  process.env.CHROME ??
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
-// ---- Formas (devuelven si un punto está adentro) ----
-
-/** La boleta: rectángulo con las esquinas de arriba redondeadas y el borde de abajo en zigzag. */
-function ticket({ left = 262, right = 762, topY = 214, base = 790, teeth = 10, depth = 26, radius = 36 } = {}) {
-  const step = (right - left) / teeth;
-  return (x, y) => {
-    if (x < left || x > right || y < topY) return false;
-    // Esquinas redondeadas de arriba: afuera del cuarto de círculo de cada esquina, no es boleta.
-    const cy = topY + radius;
-    if (y < cy) {
-      if (x < left + radius && (x - (left + radius)) ** 2 + (y - cy) ** 2 > radius ** 2) return false;
-      if (x > right - radius && (x - (right - radius)) ** 2 + (y - cy) ** 2 > radius ** 2) return false;
-    }
-    // Borde de abajo: dientes en V entre base y base + depth.
-    const t = (((x - left) % step) + step) % step;
-    const bottom = base + depth * (1 - Math.abs(t - step / 2) / (step / 2));
-    return y <= bottom;
-  };
-}
-
-/** Polígono cualquiera (regla par-impar). */
-function polygon(points) {
-  return (x, y) => {
-    let inside = false;
-    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-      const [xi, yi] = points[i];
-      const [xj, yj] = points[j];
-      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-    }
-    return inside;
-  };
-}
-
-/** La N: dos barras y la diagonal, como un solo contorno. */
-function letterN(x0 = 392, y0 = 300, h = 300, s = 74) {
-  const w = h * 0.86;
-  return polygon([
-    [x0, y0], [x0 + s, y0], [x0 + w - s, y0 + h * 0.62], [x0 + w - s, y0], [x0 + w, y0],
-    [x0 + w, y0 + h], [x0 + w - s, y0 + h], [x0 + s, y0 + h * 0.38], [x0 + s, y0 + h], [x0, y0 + h],
-  ]);
-}
-
-/** La línea punteada del troquel: cápsulas de 22 de largo cada 40. */
-function perforation(from = 302, to = 722, y0 = 690, width = 10, dash = 22, gap = 18) {
-  const r = width / 2;
-  return (x, y) => {
-    if (x < from - r || x > to + r || Math.abs(y - y0) > r) return false;
-    const start = from + Math.floor((x - from) / (dash + gap)) * (dash + gap);
-    const cx = Math.min(Math.max(x, start), start + dash);
-    return (x - cx) ** 2 + (y - y0) ** 2 <= r * r;
-  };
-}
-
-/** Cuadrado con esquinas redondeadas (para el ícono de la pantalla de inicio de la app). */
-function roundedSquare(size, radius) {
-  return (x, y) => {
-    if (x < 0 || y < 0 || x > size || y > size) return false;
-    const cx = Math.min(Math.max(x, radius), size - radius);
-    const cy = Math.min(Math.max(y, radius), size - radius);
-    return (x - cx) ** 2 + (y - cy) ** 2 <= radius * radius;
-  };
-}
-
-// ---- Dibujo ----
+const f = (n) => n.toFixed(1);
+const lerp = (a, b, t) => a + (b - a) * t;
 
 /**
- * Dibuja capas en orden. Cada capa: { shape, color } o { shape, erase: true } (deja transparente).
- * `scale` achica el dibujo alrededor del centro (para la zona segura de Android).
+ * Hoja facetada con nervadura en S: se abomba cerca de la base y la punta se abre hacia afuera.
+ * Devuelve las dos mitades (clara y oscura) a cada lado de la nervadura.
  */
-function render(size, layers, { scale = 1, samples = 4, opaque = false } = {}) {
-  const png = new PNG({ width: size, height: size });
-  const k = 1024 / size;
-  for (let py = 0; py < size; py++) {
-    for (let px = 0; px < size; px++) {
-      let r = 0, g = 0, b = 0, a = 0;
-      for (let sy = 0; sy < samples; sy++) {
-        for (let sx = 0; sx < samples; sx++) {
-          // Punto de la muestra en el lienzo de 1024, deshaciendo la escala alrededor del centro.
-          const x = 512 + (((px + (sx + 0.5) / samples) * k) - 512) / scale;
-          const y = 512 + (((py + (sy + 0.5) / samples) * k) - 512) / scale;
-          let color = null;
-          for (const layer of layers) {
-            if (layer.shape(x, y)) color = layer.erase ? null : layer.color;
-          }
-          if (color) {
-            r += color[0]; g += color[1]; b += color[2]; a += 1;
-          }
-        }
-      }
-      const i = (py * size + px) * 4;
-      const n = samples * samples;
-      // Color promedio de las muestras cubiertas; alfa = proporción cubierta.
-      png.data[i] = a ? Math.round(r / a) : 0;
-      png.data[i + 1] = a ? Math.round(g / a) : 0;
-      png.data[i + 2] = a ? Math.round(b / a) : 0;
-      png.data[i + 3] = Math.round((a / n) * 255);
-    }
-  }
-  // `opaque`: sin canal alfa (App Store rechaza el ícono si lo tiene, aunque sea todo opaco).
-  return PNG.sync.write(png, opaque ? { colorType: 2, inputHasAlpha: true } : {});
+function leaf([bx, by], [tx, ty], w, bend, flare = 0.35) {
+  const len = Math.hypot(tx - bx, ty - by);
+  const px = -(ty - by) / len;
+  const py = (tx - bx) / len;
+  const at = (t, off) => [
+    lerp(bx, tx, t) + px * off,
+    lerp(by, ty, t) + py * off,
+  ];
+  const c1 = at(0.33, bend);
+  const c2 = at(0.7, -bend * flare);
+  const spine = `M${f(bx)},${f(by)} C${f(c1[0])},${f(c1[1])} ${f(c2[0])},${f(c2[1])} ${f(tx)},${f(ty)}`;
+  const half = (k) => {
+    const a = at(0.3, bend + k * w);
+    const b = at(0.72, -bend * flare + k * w * 0.7);
+    return `${spine} C${f(b[0])},${f(b[1])} ${f(a[0])},${f(a[1])} ${f(bx)},${f(by)}Z`;
+  };
+  return [
+    ["light", half(1)],
+    ["dark", half(-1)],
+  ];
 }
 
-const everywhere = () => true;
-const talon = [
-  { shape: ticket(), color: WHITE },
-  { shape: letterN(), color: BLUE },
-  { shape: perforation(), color: RULE },
+// Cada pieza: [tono, contorno]. 'light' y 'dark' son las dos caras del oro rosa; 'hole' son los
+// detalles en el color del fondo (ojo e interior de la oreja), que en los monocromos quedan calados.
+const FOX = [
+  // Hojas del lado izquierdo, en abanico desde el pecho, y la cola que sube a la derecha.
+  ...leaf([500, 800], [440, 165], 58, -70),
+  ...leaf([495, 805], [262, 285], 64, -80),
+  ...leaf([495, 812], [190, 468], 60, -70),
+  ...leaf([500, 820], [218, 655], 50, -45),
+  ...leaf([525, 842], [850, 540], 62, 90),
+  // Cuello y cuerpo en S, de la mejilla a la base.
+  ["light", "M570,455 C515,560 495,690 515,842 C565,720 615,640 640,520 Z"],
+  [
+    "dark",
+    "M640,520 C615,640 565,720 515,842 C655,760 725,630 700,448 L620,440 Z",
+  ],
+  // Oreja de atrás.
+  ["dark", "M532,345 C535,300 545,250 560,200 C580,245 595,280 605,315 Z"],
+  // Cara: frente y hocico (claro); mejilla con el mechón (oscuro).
+  [
+    "light",
+    "M528,352 C540,320 565,305 590,300 C598,265 606,235 620,200 C636,245 648,285 655,322 C690,350 722,392 765,440 C710,440 660,436 612,432 C585,420 548,395 528,352 Z",
+  ],
+  [
+    "dark",
+    "M612,432 C660,436 710,440 765,440 C730,468 690,484 650,490 C622,494 598,502 572,516 C580,470 552,420 528,352 C548,395 585,420 612,432 Z",
+  ],
+  ["inner", "M620,240 C628,268 636,296 640,322 L612,312 Z"],
+  ["hole", "M630,376 Q655,362 682,384 Q654,392 630,376Z"],
 ];
+
+const GRADIENTS = `<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#11505A"/><stop offset="1" stop-color="#082C32"/></linearGradient>
+<linearGradient id="light" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6D2B8"/><stop offset="1" stop-color="#E0A27F"/></linearGradient>
+<linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C98462"/><stop offset="1" stop-color="#8C4F33"/></linearGradient>
+</defs>`;
+
+// El dibujo ocupa x 190–850, y 165–842: este es su centro, para centrarlo al escalar.
+const CENTER = [520, 503];
+
+/**
+ * Arma el SVG. `scale` achica el zorro alrededor del centro del lienzo; `background` es 'square'
+ * (lleno), 'rounded' (cuadrado con esquinas redondeadas) o ninguno; `mono` lo pinta todo de blanco
+ * con el ojo y la oreja calados (para los íconos que el sistema tiñe).
+ */
+function svg({ scale = 1, background, mono = false }) {
+  const paint = {
+    light: "url(#light)",
+    dark: "url(#dark)",
+    inner: "#8C4F33",
+    hole: "#0B3A41",
+  };
+  const body = mono
+    ? `<mask id="m"><rect width="1024" height="1024" fill="#000"/>${FOX.map(
+        // El trazo blanco tapa las líneas finas que el antialias deja entre las dos mitades.
+        ([tone, d]) =>
+          tone === "hole" || tone === "inner"
+            ? `<path d="${d}" fill="#000"/>`
+            : `<path d="${d}" fill="#fff" stroke="#fff" stroke-width="3"/>`,
+      ).join(
+        "",
+      )}</mask><rect width="1024" height="1024" fill="#fff" mask="url(#m)"/>`
+    : FOX.map(([tone, d]) => `<path d="${d}" fill="${paint[tone]}"/>`).join("");
+  const bg =
+    background === "square"
+      ? '<rect width="1024" height="1024" fill="url(#bg)"/>'
+      : background === "rounded"
+        ? '<rect width="1024" height="1024" rx="230" fill="url(#bg)"/>'
+        : "";
+  const move = `translate(512 512) scale(${scale}) translate(${-CENTER[0]} ${-CENTER[1]})`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">${GRADIENTS}${bg}<g transform="${move}">${body}</g></svg>`;
+}
+
+const work = mkdtempSync(join(tmpdir(), "inariko-iconos-"));
+
+/** Pasa el SVG a PNG del tamaño pedido con Chrome. `opaque` saca el canal alfa (App Store lo exige). */
+function render(size, options, { opaque = false } = {}) {
+  const page = join(work, "icono.html");
+  const shot = join(work, "icono.png");
+  writeFileSync(
+    page,
+    `<html><body style="margin:0"><div style="width:${size}px;height:${size}px">${svg(options).replace("<svg ", `<svg width="${size}" height="${size}" `)}</div></body></html>`,
+  );
+  execFileSync(
+    CHROME,
+    [
+      "--headless",
+      "--disable-gpu",
+      "--hide-scrollbars",
+      "--force-device-scale-factor=1",
+      "--default-background-color=00000000",
+      `--window-size=${size},${size}`,
+      `--screenshot=${shot}`,
+      `file://${page}`,
+    ],
+    { stdio: "ignore" },
+  );
+  const png = PNG.sync.read(readFileSync(shot));
+  return PNG.sync.write(
+    png,
+    opaque ? { colorType: 2, inputHasAlpha: true } : {},
+  );
+}
 
 const out = (name, data) => {
   writeFileSync(new URL(`../assets/${name}`, import.meta.url), data);
@@ -129,31 +155,23 @@ const out = (name, data) => {
 };
 
 // iOS y tiendas: cuadrado lleno (el sistema redondea las esquinas; no admite transparencia).
-out('icon.png', render(1024, [{ shape: everywhere, color: BLUE }, ...talon], { opaque: true }));
-
-// Android: el fondo azul es un color en app.json; el frente va achicado al 75% para que la boleta
-// entre entera en el círculo de la zona segura (66 de 108 dp) aunque el teléfono recorte en círculo.
-out('android-icon-foreground.png', render(1024, talon, { scale: 0.75 }));
-// Monocromo (íconos temáticos de Android 13+): la boleta llena, con la N y el troquel calados.
 out(
-  'android-icon-monochrome.png',
-  render(1024, [{ shape: ticket(), color: WHITE }, { shape: letterN(), erase: true }, { shape: perforation(), erase: true }], {
-    scale: 0.75,
-  }),
+  "icon.png",
+  render(1024, { background: "square", scale: 0.92 }, { opaque: true }),
 );
+
+// Android: el fondo es un color en app.json; el zorro va achicado para que entre entero en el
+// círculo de la zona segura (66 de 108 dp) aunque el teléfono recorte el ícono en círculo.
+out("android-icon-foreground.png", render(1024, { scale: 0.84 }));
+// Monocromo (íconos temáticos de Android 13+): silueta blanca con el ojo calado.
+out("android-icon-monochrome.png", render(1024, { scale: 0.84, mono: true }));
 
 // Notificaciones de Android: silueta blanca sobre transparente (el sistema la pinta con el color de
 // app.json). Más grande que el monocromo porque acá no hay recorte en círculo.
-out(
-  'notification-icon.png',
-  render(96, [{ shape: ticket(), color: WHITE }, { shape: letterN(), erase: true }, { shape: perforation(), erase: true }], {
-    scale: 1.3,
-    samples: 8,
-  }),
-);
+out("notification-icon.png", render(96, { scale: 1.3, mono: true }));
 
 // Pantalla de carga: el ícono con esquinas redondeadas, sobre el fondo de la app.
-out('splash-icon.png', render(1024, [{ shape: roundedSquare(1024, 230), color: BLUE }, ...talon], { samples: 3 }));
+out("splash-icon.png", render(1024, { background: "rounded", scale: 0.92 }));
 
 // Web.
-out('favicon.png', render(48, [{ shape: everywhere, color: BLUE }, ...talon], { samples: 8 }));
+out("favicon.png", render(48, { background: "square", scale: 0.95 }));

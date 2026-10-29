@@ -164,7 +164,7 @@ function PrivacyCover() {
       style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}
     >
       <Text variant="headlineMedium" color={colors.primary}>
-        Netto
+        Inariko
       </Text>
     </View>
   );
@@ -189,7 +189,7 @@ function LockScreen({
   const unlockWithBiometrics = useCallback(async () => {
     if (!biometrics) return;
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Desbloqueá Netto',
+      promptMessage: 'Desbloqueá Inariko',
       cancelLabel: 'Usar contraseña',
       fallbackLabel: '',
       disableDeviceFallback: true,
@@ -236,7 +236,7 @@ function LockScreen({
       <View style={{ alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <Icon name="lock-outline" size={40} color={colors.primary} />
         <Text variant="headlineSmall" color={colors.onBackground} header>
-          Netto está bloqueado
+          Inariko está bloqueado
         </Text>
         <Text color={colors.onSurfaceVariant} style={{ textAlign: 'center' }}>
           Por tu seguridad, la app se bloquea después de unos minutos sin uso.

@@ -1,17 +1,17 @@
-# 2/5: pestañas en el plan gratis, perfil y cierre de sesión (usa los datos que deja la parte 1).
+# 2/6: pestañas en el plan gratis, perfil y cierre de sesión (usa los datos que deja la parte 1).
 # Requiere el email de la cuenta de prueba (uno nuevo por corrida):
 #   ~/.maestro/bin/maestro test -e EMAIL=ana-$(date +%s)@example.com .maestro/
-appId: io.github.scilafeuersturm.netto
+appId: io.github.scilafeuersturm.inariko
 ---
 - launchApp:
     stopApp: true
 - extendedWaitUntil:
-    visible: "Netto está bloqueado|Te queda este mes"
+    visible: "Inariko está bloqueado|Te queda este mes"
     timeout: 60000
 # Si pasaron más de 5 minutos desde el último uso, la app pide desbloquear.
 - runFlow:
     when:
-      visible: "Netto está bloqueado"
+      visible: "Inariko está bloqueado"
     commands:
       - tapOn:
           id: "unlock-password"
@@ -51,7 +51,7 @@ appId: io.github.scilafeuersturm.netto
 - assertVisible: "Reportes"
 - assertVisible: "Incluido en Premium"
 - tapOn: "Ver Premium"
-- assertVisible: "Netto Premium"
+- assertVisible: "Inariko Premium"
 - assertVisible: ".*19,99 USD por año.*"
 - tapOn: "Volver"
 - tapOn:

@@ -1,0 +1,41 @@
+# Inicia sesión con una cuenta nueva (EMAIL, contraseña secreto123) y completa el onboarding.
+appId: io.github.scilafeuersturm.inariko
+---
+- extendedWaitUntil:
+    visible: "Iniciá sesión"
+    timeout: 60000
+- waitForAnimationToEnd
+- tapOn:
+    id: "login-email"
+- tapOn:
+    text: "No, gracias|No thanks"
+    optional: true
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login-password"
+- inputText: "secreto123"
+- pressKey: Enter
+- runFlow:
+    when:
+      visible: ".*Administrador de contraseñas de Google.*|.*Google Password Manager.*"
+    commands:
+      - tapOn: "Ahora no|Not now"
+- extendedWaitUntil:
+    visible: "Configuremos tu cuenta.*"
+    timeout: 60000
+- tapOn: "Paraguay.*"
+- scrollUntilVisible:
+    element: "Empezar"
+- waitForAnimationToEnd
+- tapOn: "Empezar"
+# Con Premium, la app explica los avisos antes de pedir el permiso.
+- extendedWaitUntil:
+    visible: "¿Te avisamos antes de que venzan tus facturas\\?"
+    timeout: 15000
+    optional: true
+- tapOn:
+    text: "Ahora no"
+    optional: true
+- extendedWaitUntil:
+    visible: "Te queda este mes"
+    timeout: 30000

@@ -21,7 +21,7 @@ export default function ScanInvoiceScreenGate() {
       <PremiumLocked
         icon="document-scanner"
         title="Escanear facturas"
-        description="Sacale una foto a la factura o elegí una imagen: Netto lee el monto y el vencimiento por vos. En el plan gratis podés cargarla a mano."
+        description="Sacale una foto a la factura o elegí una imagen: Inariko lee el monto y el vencimiento por vos. En el plan gratis podés cargarla a mano."
       />
       <OutlinedButton text="Cargar a mano" icon="edit" onPress={() => router.replace('/obligation')} />
     </ScreenScroll>

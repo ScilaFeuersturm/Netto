@@ -18,7 +18,11 @@ import { getDb, notifyDataChanged } from './db';
 import { requireUserId } from './session';
 
 /**
- * Lectura y escritura de los datos del usuario en la base local. Cada escritura marca la fila como
+ * Lectura y escritura de los datos del usuario en la base local. La base del teléfono tiene solo lo que
+ * esta cuenta puede ver: lo propio y lo que el grupo del plan familiar compartió (con el user_id de
+ * quien lo cargó). Por eso las lecturas no filtran por usuario; las escrituras sí cuidan de quién es
+ * cada dato.
+ * Cada escritura marca la fila como
  * pendiente de subir (dirty) con la hora del cambio, y programa una sincronización. Los borrados son
  * lógicos (deleted = 1) para que lleguen a los demás dispositivos.
  */
@@ -45,6 +49,7 @@ type ObligationRow = {
   notes: string | null;
   created_from_ocr: number;
   created_on: number;
+  household_id: string | null;
 };
 
 const toObligation = (r: ObligationRow): Obligation => ({
@@ -62,6 +67,7 @@ const toObligation = (r: ObligationRow): Obligation => ({
   notes: r.notes,
   createdFromOcr: !!r.created_from_ocr,
   createdAt: r.created_on,
+  householdId: r.household_id,
 });
 
 type IncomeRow = {
@@ -72,6 +78,7 @@ type IncomeRow = {
   currency: CurrencyCode;
   day_of_month: number;
   is_recurring: number;
+  household_id: string | null;
 };
 
 const toIncome = (r: IncomeRow): Income => ({
@@ -82,6 +89,7 @@ const toIncome = (r: IncomeRow): Income => ({
   currency: r.currency,
   dayOfMonth: r.day_of_month,
   isRecurring: !!r.is_recurring,
+  householdId: r.household_id,
 });
 
 type PaymentRow = {
@@ -93,6 +101,7 @@ type PaymentRow = {
   amount: number;
   currency: CurrencyCode;
   paid_date: number;
+  household_id: string | null;
 };
 
 const toPayment = (r: PaymentRow): PaymentHistoryEntry => ({
@@ -104,6 +113,7 @@ const toPayment = (r: PaymentRow): PaymentHistoryEntry => ({
   amount: r.amount,
   currency: r.currency,
   paidDate: r.paid_date,
+  householdId: r.household_id,
 });
 
 type BudgetPlanRow = {
@@ -199,22 +209,21 @@ export function setReminderDaysBefore(days: number): Promise<void> {
 
 // ---- Ingresos ----
 
-export async function getIncomes(userId: string): Promise<Income[]> {
-  const rows = await getDb().getAllAsync<IncomeRow>(
-    'SELECT * FROM incomes WHERE user_id = ? AND deleted = 0 ORDER BY day_of_month ASC',
-    userId,
-  );
+export async function getIncomes(): Promise<Income[]> {
+  const rows = await getDb().getAllAsync<IncomeRow>('SELECT * FROM incomes WHERE deleted = 0 ORDER BY day_of_month ASC');
   return rows.map(toIncome);
 }
 
-export type NewIncome = Pick<Income, 'name' | 'amount' | 'currency'> & Partial<Pick<Income, 'dayOfMonth' | 'isRecurring'>>;
+export type NewIncome = Pick<Income, 'name' | 'amount' | 'currency'> &
+  Partial<Pick<Income, 'dayOfMonth' | 'isRecurring' | 'householdId'>>;
 
 export async function addIncome(income: NewIncome): Promise<void> {
   await getDb().runAsync(
-    `INSERT INTO incomes (id, user_id, name, amount, currency, day_of_month, is_recurring, updated_at, deleted, dirty)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
+    `INSERT INTO incomes
+      (id, user_id, name, amount, currency, day_of_month, is_recurring, household_id, updated_at, deleted, dirty)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
     randomUUID(), requireUserId(), income.name, income.amount, income.currency, income.dayOfMonth ?? 1,
-    (income.isRecurring ?? true) ? 1 : 0, Date.now(),
+    (income.isRecurring ?? true) ? 1 : 0, income.householdId ?? null, Date.now(),
   );
   afterLocalWrite();
 }
@@ -229,19 +238,15 @@ export async function deleteIncome(id: string): Promise<void> {
 
 // ---- Obligaciones e historial de pagos ----
 
-export async function getObligations(userId: string): Promise<Obligation[]> {
+export async function getObligations(): Promise<Obligation[]> {
   const rows = await getDb().getAllAsync<ObligationRow>(
-    'SELECT * FROM obligations WHERE user_id = ? AND deleted = 0 ORDER BY is_paid ASC, due_date ASC',
-    userId,
+    'SELECT * FROM obligations WHERE deleted = 0 ORDER BY is_paid ASC, due_date ASC',
   );
   return rows.map(toObligation);
 }
 
 export async function getObligation(id: string): Promise<Obligation | null> {
-  const row = await getDb().getFirstAsync<ObligationRow>(
-    'SELECT * FROM obligations WHERE id = ? AND user_id = ? AND deleted = 0',
-    id, requireUserId(),
-  );
+  const row = await getDb().getFirstAsync<ObligationRow>('SELECT * FROM obligations WHERE id = ? AND deleted = 0', id);
   return row ? toObligation(row) : null;
 }
 
@@ -259,12 +264,20 @@ export type ObligationInput = {
   paidDate: number | null;
   notes: string | null;
   createdFromOcr: boolean;
+  /** Grupo con el que se comparte; null para que sea privada. */
+  householdId: string | null;
 };
 
-/** Crea la obligación, o la reemplaza si `id` ya existe. */
+/**
+ * Crea la obligación, o la reemplaza si `id` ya existe. Una factura compartida que cargó otra persona
+ * se puede editar, pero sigue siendo suya y solo ella decide si deja de compartirla.
+ */
 export async function saveObligation(input: ObligationInput): Promise<void> {
   const existing = input.id ? await getObligation(input.id) : null;
-  await writeObligation(input, requireUserId(), existing?.createdAt ?? today());
+  const me = requireUserId();
+  const owner = existing?.userId ?? me;
+  const householdId = owner === me ? input.householdId : (existing?.householdId ?? null);
+  await writeObligation({ ...input, householdId }, owner, existing?.createdAt ?? today());
   afterLocalWrite();
 }
 
@@ -272,14 +285,15 @@ async function writeObligation(input: ObligationInput, userId: string, createdOn
   await getDb().runAsync(
     `INSERT OR REPLACE INTO obligations
       (id, user_id, name, reference, amount, currency, due_date, category, is_recurring, is_paid, paid_date, notes,
-       created_from_ocr, created_on, updated_at, deleted, dirty)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
+       created_from_ocr, created_on, household_id, updated_at, deleted, dirty)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
     input.id || randomUUID(), userId, input.name, input.reference, input.amount, input.currency, input.dueDate,
     input.category, input.isRecurring ? 1 : 0, input.isPaid ? 1 : 0, input.paidDate, input.notes,
-    input.createdFromOcr ? 1 : 0, createdOn, Date.now(),
+    input.createdFromOcr ? 1 : 0, createdOn, input.householdId, Date.now(),
   );
 }
 
+/** Solo quien cargó la factura puede borrarla (aunque esté compartida). */
 export async function deleteObligation(id: string): Promise<void> {
   await getDb().runAsync(
     'UPDATE obligations SET deleted = 1, dirty = 1, updated_at = ? WHERE id = ? AND user_id = ?',
@@ -288,29 +302,32 @@ export async function deleteObligation(id: string): Promise<void> {
   afterLocalWrite();
 }
 
-export async function getPaymentHistory(userId: string): Promise<PaymentHistoryEntry[]> {
-  const rows = await getDb().getAllAsync<PaymentRow>(
-    'SELECT * FROM payment_history WHERE user_id = ? AND deleted = 0 ORDER BY paid_date DESC',
-    userId,
-  );
+export async function getPaymentHistory(): Promise<PaymentHistoryEntry[]> {
+  const rows = await getDb().getAllAsync<PaymentRow>('SELECT * FROM payment_history WHERE deleted = 0 ORDER BY paid_date DESC');
   return rows.map(toPayment);
 }
 
-/** Marca una obligación como pagada, registra el historial y, si es recurrente, genera la próxima cuota. */
+/**
+ * Marca una obligación como pagada, registra el historial y, si es recurrente, genera la próxima cuota.
+ * El pago y la próxima cuota quedan a nombre de quien pagó (el servidor no deja crear datos a nombre de
+ * otra persona) y, si la factura era de la casa, también se comparten.
+ */
 export async function markAsPaid(obligation: Obligation, paidDate: number = today()): Promise<void> {
   const db = getDb();
   const now = Date.now();
+  const me = requireUserId();
   await db.withTransactionAsync(async () => {
     await db.runAsync(
-      'UPDATE obligations SET is_paid = 1, paid_date = ?, updated_at = ?, dirty = 1 WHERE id = ? AND user_id = ?',
-      paidDate, now, obligation.id, obligation.userId,
+      'UPDATE obligations SET is_paid = 1, paid_date = ?, updated_at = ?, dirty = 1 WHERE id = ?',
+      paidDate, now, obligation.id,
     );
     await db.runAsync(
       `INSERT INTO payment_history
-        (id, user_id, obligation_id, obligation_name, category, amount, currency, paid_date, updated_at, deleted, dirty)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
-      randomUUID(), obligation.userId, obligation.id, obligation.name, obligation.category, obligation.amount,
-      obligation.currency, paidDate, now,
+        (id, user_id, obligation_id, obligation_name, category, amount, currency, paid_date, household_id,
+         updated_at, deleted, dirty)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
+      randomUUID(), me, obligation.id, obligation.name, obligation.category, obligation.amount,
+      obligation.currency, paidDate, obligation.householdId, now,
     );
     if (obligation.isRecurring) {
       await writeObligation(
@@ -322,7 +339,7 @@ export async function markAsPaid(obligation: Obligation, paidDate: number = toda
           paidDate: null,
           createdFromOcr: false,
         },
-        obligation.userId,
+        me,
         obligation.createdAt,
       );
     }

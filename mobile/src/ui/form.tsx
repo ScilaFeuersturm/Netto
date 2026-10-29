@@ -196,12 +196,35 @@ export function ChipRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SwitchRow({ label, value, onValueChange }: { label: string; value: boolean; onValueChange: (v: boolean) => void }) {
+export function SwitchRow({
+  label,
+  value,
+  onValueChange,
+  supporting,
+  testID,
+}: {
+  label: string;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+  /** Texto de ayuda debajo de la etiqueta. */
+  supporting?: string;
+  testID?: string;
+}) {
   const { colors } = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-      <Text style={{ flex: 1 }}>{label}</Text>
+      <View style={{ flex: 1 }} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+        <Text>{label}</Text>
+        {supporting && (
+          <Text variant="bodySmall" color={colors.onSurfaceVariant}>
+            {supporting}
+          </Text>
+        )}
+      </View>
       <Switch
+        testID={testID}
+        accessibilityLabel={label}
+        accessibilityHint={supporting}
         value={value}
         onValueChange={onValueChange}
         trackColor={{ true: colors.primary, false: colors.surfaceVariant }}

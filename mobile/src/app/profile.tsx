@@ -10,6 +10,8 @@ import { RATES_SOURCE_NAME, refreshRates, setManualRate } from '@/data/rates';
 import { setDisplayCurrency, setReminderDaysBefore } from '@/data/repository';
 import { REMINDER_DAY_OPTIONS } from '@/domain/models';
 import { usePremium } from '@/data/premium';
+import { ConsumerRightsButtons } from '@/features/ConsumerRights';
+import { FamilyCard } from '@/features/Household';
 import { goToPremium, PremiumLocked } from '@/features/Premium';
 import { AccountActions, SyncCard } from '@/features/AccountActions';
 import { initialsOf } from '@/features/selectors';
@@ -56,6 +58,8 @@ export default function ProfileScreen() {
       <AccountCard name={user?.name ?? ''} email={user?.email ?? ''} />
 
       <PlanCard />
+
+      <FamilyCard />
 
       <SyncCard />
 
@@ -121,7 +125,9 @@ function LegalCard() {
         <Divider />
         <TextButton text="Términos y condiciones" onPress={open(LegalLinks.terms)} />
         <Divider />
-        <TextButton text="Escribir a soporte" onPress={open(`mailto:${SUPPORT_EMAIL}?subject=Netto`)} />
+        <TextButton text="Escribir a soporte" onPress={open(`mailto:${SUPPORT_EMAIL}?subject=Inariko`)} />
+        <Divider />
+        <ConsumerRightsButtons />
       </View>
     </Card>
   );
@@ -130,11 +136,11 @@ function LegalCard() {
 /** Plan actual (gratis o Premium) y acceso a la pantalla de planes. */
 function PlanCard() {
   const { colors } = useTheme();
-  const { premium, until } = usePremium();
+  const { premium, until, plan } = usePremium();
   return (
     <Card>
       <Text variant="titleMedium" header>
-        {premium ? 'Tenés Netto Premium' : 'Plan gratis'}
+        {premium ? (plan === 'family' ? 'Tenés Inariko Premium familiar' : 'Tenés Inariko Premium') : 'Plan gratis'}
       </Text>
       <Text variant="bodySmall" color={colors.onSurfaceVariant}>
         {premium && until != null

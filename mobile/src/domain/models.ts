@@ -164,6 +164,8 @@ export type Obligation = {
   notes: string | null;
   createdFromOcr: boolean;
   createdAt: EpochDay;
+  /** Grupo del plan familiar con el que está compartido; null si es privado. */
+  householdId: string | null;
 };
 
 /** Una fuente de ingreso mensual (sueldo, freelance, renta, etc). `amount` está en unidad mínima de `currency`. */
@@ -175,6 +177,8 @@ export type Income = {
   currency: CurrencyCode;
   dayOfMonth: number;
   isRecurring: boolean;
+  /** Grupo del plan familiar con el que está compartido; null si es privado. */
+  householdId: string | null;
 };
 
 /** Registro histórico de un pago realizado, conservado aunque la obligación original cambie. */
@@ -187,6 +191,8 @@ export type PaymentHistoryEntry = {
   amount: number;
   currency: CurrencyCode;
   paidDate: EpochDay;
+  /** Grupo del plan familiar con el que está compartido; null si es privado. */
+  householdId: string | null;
 };
 
 /** Preferencias de cada usuario (una fila por usuario): modelo de ahorro/gasto activo y moneda de visualización. */

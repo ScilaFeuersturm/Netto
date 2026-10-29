@@ -28,9 +28,9 @@ export default function TabsLayout() {
     <>
     <NotificationPrimer />
     <Tabs
-      tabBar={(props) => <NettoBottomBar {...props} />}
+      tabBar={(props) => <InarikoBottomBar {...props} />}
       screenOptions={{
-        header: () => <NettoTopBar />,
+        header: () => <InarikoTopBar />,
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
@@ -42,7 +42,7 @@ export default function TabsLayout() {
   );
 }
 
-function NettoTopBar() {
+function InarikoTopBar() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const header = useDerived(headerState);
@@ -54,7 +54,7 @@ function NettoTopBar() {
         {/* Las barras superior e inferior están siempre en pantalla: crecen poco con el texto grande,
             como las barras del sistema, para dejarle lugar al contenido. */}
         <Text variant="titleLarge" color={colors.onBackground} style={{ flex: 1 }} maxFontSizeMultiplier={1.3} header>
-          Netto
+          Inariko
         </Text>
         <CurrencyMenu selected={header.displayCurrency} onSelect={(c) => void setDisplayCurrency(c)} />
         <Pressable
@@ -180,7 +180,7 @@ function CurrencyMenu({ selected, onSelect }: { selected: CurrencyCode; onSelect
   );
 }
 
-function NettoBottomBar({ state, navigation }: BottomTabBarProps) {
+function InarikoBottomBar({ state, navigation }: BottomTabBarProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   return (

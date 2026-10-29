@@ -1,20 +1,20 @@
-/* Páginas legales de Netto: misma paleta "Boleta" que la app. */
+/* Páginas legales de Inariko: misma paleta que la app (verde azulado y cobre del logo). */
 :root {
-  --papel: #EEF1F5;
+  --papel: #F2F5F4;
   --hoja: #FFFFFF;
-  --tinta: #1A2233;
-  --tinta-suave: #56607A;
-  --birome: #2340A0;
-  --regla: #D9DEE7;
+  --tinta: #10262A;
+  --tinta-suave: #4E6266;
+  --birome: #0D5761;
+  --regla: #D5DFDF;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --papel: #10151F;
-    --hoja: #1A212D;
-    --tinta: #ECEEF2;
-    --tinta-suave: #A7AFBF;
-    --birome: #9DB2F5;
-    --regla: #2F3847;
+    --papel: #0A191C;
+    --hoja: #112529;
+    --tinta: #E5EEEE;
+    --tinta-suave: #A2B5B7;
+    --birome: #7FC6CB;
+    --regla: #22393D;
   }
 }
 * { box-sizing: border-box; }
@@ -44,3 +44,13 @@ th { font-weight: 600; }
 .nota { color: var(--tinta-suave); font-size: 0.95rem; }
 nav { margin-top: 2.5em; padding-top: 1em; border-top: 1px dashed var(--regla); }
 nav a { margin-right: 1.2em; }
+.botones { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 1.5em; }
+.boton {
+  display: inline-block;
+  padding: 12px 18px;
+  border: 2px solid var(--birome);
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.boton:hover { background: var(--regla); }

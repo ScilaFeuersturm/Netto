@@ -8,7 +8,7 @@ import { AlertBanner, TextButton } from '@/ui/primitives';
 import { useTheme } from '@/ui/theme';
 
 /**
- * Destino de los links de los emails (netto://auth/callback?code=...): confirmación de cuenta o
+ * Destino de los links de los emails (inariko://auth/callback?code=...): confirmación de cuenta o
  * recuperación de contraseña. Canjea el código por una sesión y sigue al lugar que corresponde.
  */
 export default function AuthCallbackScreen() {

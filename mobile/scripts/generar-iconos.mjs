@@ -120,14 +120,11 @@ function svg({ scale = 1, background, mono = false }) {
 
 const work = mkdtempSync(join(tmpdir(), "inariko-iconos-"));
 
-/** Pasa el SVG a PNG del tamaño pedido con Chrome. `opaque` saca el canal alfa (App Store lo exige). */
-function render(size, options, { opaque = false } = {}) {
-  const page = join(work, "icono.html");
-  const shot = join(work, "icono.png");
-  writeFileSync(
-    page,
-    `<html><body style="margin:0"><div style="width:${size}px;height:${size}px">${svg(options).replace("<svg ", `<svg width="${size}" height="${size}" `)}</div></body></html>`,
-  );
+/** Saca una captura de una página HTML con Chrome. `opaque` saca el canal alfa (App Store lo exige). */
+function screenshot(width, height, html, { opaque = false } = {}) {
+  const page = join(work, "pagina.html");
+  const shot = join(work, "pagina.png");
+  writeFileSync(page, `<html><body style="margin:0">${html}</body></html>`);
   execFileSync(
     CHROME,
     [
@@ -136,7 +133,7 @@ function render(size, options, { opaque = false } = {}) {
       "--hide-scrollbars",
       "--force-device-scale-factor=1",
       "--default-background-color=00000000",
-      `--window-size=${size},${size}`,
+      `--window-size=${width},${height}`,
       `--screenshot=${shot}`,
       `file://${page}`,
     ],
@@ -146,6 +143,42 @@ function render(size, options, { opaque = false } = {}) {
   return PNG.sync.write(
     png,
     opaque ? { colorType: 2, inputHasAlpha: true } : {},
+  );
+}
+
+/** Pasa el SVG a PNG del tamaño pedido. */
+function render(size, options, flags) {
+  const art = svg(options).replace("<svg ", `<svg width="${size}" height="${size}" `);
+  return screenshot(size, size, `<div style="width:${size}px;height:${size}px">${art}</div>`, flags);
+}
+
+/**
+ * Imagen destacada de Google Play (1024 × 500): el zorro a la izquierda y el nombre con la frase a
+ * la derecha, sobre el mismo verde azulado del ícono. Google recorta los bordes en algunos lugares,
+ * así que el contenido queda lejos de los costados.
+ */
+function featureGraphic() {
+  const font = new URL("../assets/fonts/plus_jakarta_sans_extrabold.ttf", import.meta.url).href;
+  const body = new URL("../assets/fonts/plus_jakarta_sans_medium.ttf", import.meta.url).href;
+  const fox = svg({ scale: 0.95 }).replace("<svg ", '<svg width="440" height="440" ');
+  return screenshot(
+    1024,
+    500,
+    `<style>
+@font-face { font-family: Jakarta; font-weight: 800; src: url(${font}); }
+@font-face { font-family: Jakarta; font-weight: 500; src: url(${body}); }
+</style>
+<div style="width:1024px;height:500px;display:flex;align-items:center;gap:8px;padding-left:90px;box-sizing:border-box;
+  background:linear-gradient(135deg,#11505A,#082C32);font-family:Jakarta">
+  ${fox}
+  <div>
+    <div style="font-size:104px;font-weight:800;letter-spacing:-3px;line-height:1;
+      background:linear-gradient(135deg,#F6D2B8,#D99878);-webkit-background-clip:text;color:transparent">Inariko</div>
+    <div style="margin-top:18px;font-size:30px;font-weight:500;line-height:1.3;color:#D9ECEC;max-width:400px">
+      Tus facturas, vencimientos y ahorro, siempre a mano.</div>
+  </div>
+</div>`,
+    { opaque: true },
   );
 }
 
@@ -175,3 +208,12 @@ out("splash-icon.png", render(1024, { background: "rounded", scale: 0.92 }));
 
 // Web.
 out("favicon.png", render(48, { background: "square", scale: 0.95 }));
+
+// Google Play pide sus propias imágenes para la ficha (no van dentro de la app): el ícono de
+// 512 × 512 cuadrado y lleno (Google redondea las esquinas) y la imagen destacada.
+const store = (name, data) => {
+  writeFileSync(new URL(`../tienda/${name}`, import.meta.url), data);
+  console.log(`tienda/${name}`);
+};
+store("play-icono-512.png", render(512, { background: "square", scale: 0.92 }, { opaque: true }));
+store("play-imagen-destacada.png", featureGraphic());
